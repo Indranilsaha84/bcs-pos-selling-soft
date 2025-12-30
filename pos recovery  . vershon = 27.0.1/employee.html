@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management</title>
+    <link rel="icon" href="logo.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bs-primary-rgb: 99, 102, 241;
+            --bs-primary: #6366f1;
+            --bs-body-font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--bs-body-font-family);
+            background-color: var(--bs-tertiary-bg);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100%;
+            padding-top: 56px;
+            background-color: var(--bs-body-bg);
+            border-right: 1px solid var(--bs-border-color);
+            z-index: 1020;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            color: var(--bs-body-color);
+            padding: .75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: var(--bs-tertiary-bg);
+        }
+
+        .sidebar .nav-link.active {
+            color: var(--bs-primary);
+            font-weight: 600;
+            border-left-color: var(--bs-primary);
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding-top: 72px;
+            flex-grow: 1;
+            padding-bottom: 40px;
+        }
+
+        .permission-checkbox-group {
+            background-color: var(--bs-tertiary-bg);
+            border-radius: .5rem;
+        }
+
+        /* Theme Switcher */
+        .theme-switch-wrapper {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 1001;
+        }
+
+        #theme-switcher {
+            background: none;
+            border: 1px solid var(--bs-border-color-translucent);
+            padding: 0;
+            cursor: pointer;
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: var(--bs-tertiary-bg);
+            border-radius: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer {
+            background-color: var(--bs-body-bg);
+            padding: 1rem;
+            border-top: 1px solid var(--bs-border-color);
+            margin-left: 240px;
+        }
+
+        [data-bs-theme="dark"] .footer {
+            background: linear-gradient(270deg, #1e1b4b 0%, #3730a3 100%);
+        }
+
+        [data-bs-theme="light"] .footer {
+            background: linear-gradient(270deg, #e0e7ff 0%, #eef2ff 100%);
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        // Redirect to sign-in if not authenticated
+        if (sessionStorage.getItem('isAuthenticated') !== 'true') {
+            window.location.href = 'signin.html';
+        }
+    </script>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.html" style="margin-left: 240px;">Baroda Computure And Sales</a>
+            <div>
+                <a href="pos.html" class="btn btn-warning me-2" title="Go to Point of Sale">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-cart-check-fill" viewBox="0 0 16 16">
+                        <path
+                            d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 4 0h3.5a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1.646-7.646-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708z" />
+                    </svg>
+                    POS
+                </a>
+                <span id="welcomeMessage" class="navbar-text text-white me-3"></span>
+                <button id="logoutButton" class="btn btn-danger" title="Logout from the application">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="sidebar">
+        <div class="p-3 text-center border-bottom">
+            <h5 class="mb-0">Navigation</h5>
+        </div>
+        <ul class="nav flex-column pt-2">
+            <li class="nav-item" id="dashboard-nav-item">
+                <a class="nav-link" href="dashboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item" id="products-nav-item">
+                <a class="nav-link" href="#productSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="productSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <path d="M16 13H8"></path>
+                        <path d="M16 17H8"></path>
+                        <path d="M10 9H8"></path>
+                    </svg>
+                    Products
+                </a>
+                <div class="collapse" id="productSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="web.html">All Product</a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="add-product.html">Add product</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="barcode_generator.html">Barcode Generator</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item" id="purchase-nav-item">
+                <a class="nav-link" href="#purchaseSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="false" aria-controls="purchaseSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 10V7a5 5 0 0 1 10 0v3"></path>
+                        <path
+                            d="M17 10h-1a4 4 0 0 0-8 0H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Z">
+                        </path>
+                    </svg>
+                    Purchase
+                </a>
+                <div class="collapse" id="purchaseSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="purchase.html">Add purchase</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="purchase-history.html">Purchase
+                                History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="purchase-return.html">Purchase
+                                Return</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="purchase-return-history.html">Purchase
+                                Return History</a></li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item" id="sales-nav-item">
+                <a class="nav-link" href="#salesSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="salesSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                        <path d="M12 20v-8"></path>
+                        <path d="M12 4v8"></path>
+                        <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                    Sales
+                </a>
+                <div class="collapse" id="salesSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="sales.html">Add Sales History</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="pos-sales-history.html">POS Sales History</a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="add-sale.html">Add sale</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="sell-return.html">Sell Return</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="sell-return-history.html">Sell Return History</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item" id="people-nav-item">
+                <a class="nav-link" href="#peopleSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="peopleSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-users">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    People
+                </a>
+                <div class="collapse" id="peopleSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="customer.html">Customer List</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="supplier.html">Supplier List</a></li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#reportsSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="reportsSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-bar-chart-2">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    Reports
+                </a>
+                <div class="collapse" id="reportsSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="profit-and-loss.html">Profit &
+                                Loss</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-report.html">Stock Report</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-adjust.html">Stock Adjust</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item" id="leaderboard-nav-item">
+                <a class="nav-link" href="leaderboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-award"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                    Leaderboard
+                </a>
+            </li>
+            <li class="nav-item" id="employee-nav-item">
+                <a class="nav-link active" href="employee.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Employee
+                </a>
+            </li>
+            <li class="nav-item" id="account-nav-item">
+                <a class="nav-link" href="account.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Account
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="container-fluid px-4">
+            <div
+                class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Employee Management</h1>
+                <button id="addEmployeeBtn" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#employeeModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-plus-lg me-2" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z" />
+                    </svg>
+                    Add Employee
+                </button>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="row mb-4">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-search" viewBox="0 0 16 16">
+                                <path
+                                    d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.098zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                            </svg>
+                        </span>
+                        <input type="search" id="employeeSearchInput" class="form-control"
+                            placeholder="Search by name or code...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Employee Accounts</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div id="employeeListContainer">
+                        <!-- Employee list will be rendered here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+ <!-- Footer -->
+    <footer class="footer">
+      <div class="text-center">
+         <span class="text-muted">Made with care in <Strong>Bangladesh 🇧🇩 </Strong>| <strong> Devloped by</strong>: Indranil Saha | <strong> Version</strong>: 27.0.1 | <Strong>Powered by</Strong>: Google Firebase.</span>
+      </div>
+   </footer>
+    
+    <!-- Employee Details Modal -->
+    <div class="modal fade" id="employeeDetailsModal" tabindex="-1" aria-labelledby="employeeDetailsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="employeeDetailsModalLabel">Employee Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="employeeDetailsContainer">
+                        <!-- Details will be injected here by JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Employee Modal -->
+    <div class="modal fade" id="employeeModal" tabindex="-1" aria-labelledby="employeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="employeeModalLabel">Add New Employee</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="employeeForm">
+                        <input type="hidden" id="employeeId" readonly>
+                        <h5 class="text-muted mb-3">Normal Data</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6"><label for="firstName" class="form-label">First Name</label><input
+                                    type="text" class="form-control" id="firstName" required></div>
+                            <div class="col-md-6"><label for="lastName" class="form-label">Last Name</label><input
+                                    type="text" class="form-control" id="lastName"></div>
+                            <div class="col-md-6"><label for="language" class="form-label">Language</label><input
+                                    type="text" class="form-control" id="language"></div>
+                            <div class="col-md-6"><label for="employeeLocation"
+                                    class="form-label">Location</label><input type="text" class="form-control"
+                                    id="employeeLocation"></div>
+                            <div class="col-md-6"><label for="employeeMobile" class="form-label">Mobile
+                                    Number</label><input type="tel" class="form-control" id="employeeMobile" required>
+                            </div>
+                            <div class="col-md-6"><label for="employeeEmail" class="form-label">Email
+                                    (Optional)</label><input type="email" class="form-control" id="employeeEmail"></div>
+                        </div>
+
+                        <h5 class="text-muted mb-3">Authentication Data</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4"><label for="employeeUsername"
+                                    class="form-label">Username</label><input type="text" class="form-control"
+                                    id="employeeUsername" required></div>
+                            <div class="col-md-4"><label for="employeePassword"
+                                    class="form-label">Password</label><input type="password" class="form-control"
+                                    id="employeePassword">
+                                <div class="form-text" id="passwordHelpBlock">Leave blank to keep current password.
+                                </div>
+                            </div>
+                            <div class="col-md-4"><label for="employeeCode" class="form-label">Code</label><input
+                                    type="text" class="form-control" id="employeeCode" required></div>
+                        </div>
+
+                        <h5 class="text-muted mb-3">Permissions</h5>
+                        <div id="permissionsContainer" class="p-3 permission-checkbox-group">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="accordion" id="permissionsAccordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingDashboard">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDashboard" aria-expanded="false" aria-controls="collapseDashboard">
+                                                    Dashboard Permissions
+                                                </button>
+                                            </h2>
+                                            <div id="collapseDashboard" class="accordion-collapse collapse" aria-labelledby="headingDashboard" data-bs-parent="#permissionsAccordion">
+                                                <div class="accordion-body">
+                                                    <div class="row">
+                                                        <div class="col-md-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard" id="perm_dashboard"><label class="form-check-label fw-bold" for="perm_dashboard">Dashboard Access (Required for login)</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_total_sale_bdt" id="perm_dashboard_total_sale_bdt"><label class="form-check-label" for="perm_dashboard_total_sale_bdt">Total Sale (BDT)</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_total_purchase" id="perm_dashboard_total_purchase"><label class="form-check-label" for="perm_dashboard_total_purchase">Total Purchase</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_total_sales_count" id="perm_dashboard_total_sales_count"><label class="form-check-label" for="perm_dashboard_total_sales_count">Total Sales</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_net_profit" id="perm_dashboard_net_profit"><label class="form-check-label" for="perm_dashboard_net_profit">Net Profit</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_total_purchase_due" id="perm_dashboard_total_purchase_due"><label class="form-check-label" for="perm_dashboard_total_purchase_due">Total Purchase Due</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_total_sale_due" id="perm_dashboard_total_sale_due"><label class="form-check-label" for="perm_dashboard_total_sale_due">Total Sale Due</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_total_sale_return" id="perm_dashboard_total_sale_return"><label class="form-check-label" for="perm_dashboard_total_sale_return">Total Sale Return (TSR)</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_total_purchase_return" id="perm_dashboard_total_purchase_return"><label class="form-check-label" for="perm_dashboard_total_purchase_return">Total Purchase Return (TPR)</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_total_products" id="perm_dashboard_total_products"><label class="form-check-label" for="perm_dashboard_total_products">Total Products</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_items_in_stock" id="perm_dashboard_items_in_stock"><label class="form-check-label" for="perm_dashboard_items_in_stock">Items in Stock</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_out_of_stock" id="perm_dashboard_out_of_stock"><label class="form-check-label" for="perm_dashboard_out_of_stock">Out of Stock</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_categories" id="perm_dashboard_categories"><label class="form-check-label" for="perm_dashboard_categories">Categories</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_stock_alert" id="perm_dashboard_stock_alert"><label class="form-check-label" for="perm_dashboard_stock_alert">Stock Alert</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_total_customers" id="perm_dashboard_total_customers"><label class="form-check-label" for="perm_dashboard_total_customers">Total Customers</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_total_suppliers" id="perm_dashboard_total_suppliers"><label class="form-check-label" for="perm_dashboard_total_suppliers">Total Suppliers</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_total_employees" id="perm_dashboard_total_employees"><label class="form-check-label" for="perm_dashboard_total_employees">Total Employees</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_top_selling_products" id="perm_dashboard_top_selling_products"><label class="form-check-label" for="perm_dashboard_top_selling_products">Top Selling Products</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_products_by_category" id="perm_dashboard_products_by_category"><label class="form-check-label" for="perm_dashboard_products_by_category">Products by Category Chart</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_stock_distribution" id="perm_dashboard_stock_distribution"><label class="form-check-label" for="perm_dashboard_stock_distribution">Stock Distribution Chart</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_30_day_sales" id="perm_dashboard_30_day_sales"><label class="form-check-label" for="perm_dashboard_30_day_sales">30-Day Sales Overview</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_30_day_sale_due" id="perm_dashboard_30_day_sale_due"><label class="form-check-label" for="perm_dashboard_30_day_sale_due">30-Day Sale Due Overview</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_30_day_sale_return" id="perm_dashboard_30_day_sale_return"><label class="form-check-label" for="perm_dashboard_30_day_sale_return">30-Day Sale Return Overview</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_30_day_purchase" id="perm_dashboard_30_day_purchase"><label class="form-check-label" for="perm_dashboard_30_day_purchase">30-Day Purchase Overview</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_30_day_purchase_due" id="perm_dashboard_30_day_purchase_due"><label class="form-check-label" for="perm_dashboard_30_day_purchase_due">30-Day Purchase Due Overview</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_30_day_purchase_return" id="perm_dashboard_30_day_purchase_return"><label class="form-check-label" for="perm_dashboard_30_day_purchase_return">30-Day Purchase Return Overview</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_fy_sales" id="perm_dashboard_fy_sales"><label class="form-check-label" for="perm_dashboard_fy_sales">Financial Year Sales</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_fy_sale_due" id="perm_dashboard_fy_sale_due"><label class="form-check-label" for="perm_dashboard_fy_sale_due">Financial Year Sale Due</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_fy_purchase_due" id="perm_dashboard_fy_purchase_due"><label class="form-check-label" for="perm_dashboard_fy_purchase_due">Financial Year Purchase Due</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_fy_purchase" id="perm_dashboard_fy_purchase"><label class="form-check-label" for="perm_dashboard_fy_purchase">Financial Year Purchase</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_fy_sell_return" id="perm_dashboard_fy_sell_return"><label class="form-check-label" for="perm_dashboard_fy_sell_return">Financial Year Sell Return</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="dashboard_fy_purchase_return" id="perm_dashboard_fy_purchase_return"><label class="form-check-label" for="perm_dashboard_fy_purchase_return">Financial Year Purchase Return</label></div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check form-switch"><input class="form-check-input" type="checkbox"
+                                            value="purchase" id="perm_purchase"><label class="form-check-label"
+                                            for="perm_purchase">Purchase</label></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check form-switch"><input class="form-check-input" type="checkbox"
+                                            value="pos" id="perm_pos"><label class="form-check-label"
+                                            for="perm_pos">POS</label></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check form-switch"><input class="form-check-input" type="checkbox"
+                                            value="add_sale" id="perm_add_sale"><label class="form-check-label"
+                                            for="perm_add_sale">Add Sale</label></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check form-switch"><input class="form-check-input" type="checkbox"
+                                            value="purchase_return" id="perm_purchase_return"><label
+                                            class="form-check-label" for="perm_purchase_return">Purchase Return</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check form-switch"><input class="form-check-input" type="checkbox"
+                                            value="add_product" id="perm_add_product"><label class="form-check-label"
+                                            for="perm_add_product">Add Product</label></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check form-switch"><input class="form-check-input" type="checkbox"
+                                            value="sell_return" id="perm_sell_return"><label class="form-check-label"
+                                            for="perm_sell_return">Sell Return</label></div>
+                                </div>
+
+                                <!-- Leaderboard -->
+                                <div class="col-12 mt-3">
+                                    <div class="accordion" id="leaderboardAccordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingLeaderboard">
+                                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLeaderboard" aria-expanded="false" aria-controls="collapseLeaderboard">
+                                                    Leaderboard
+                                                </button>
+                                            </h2>
+                                            <div id="collapseLeaderboard" class="accordion-collapse collapse" aria-labelledby="headingLeaderboard" data-bs-parent="#permissionsAccordion">
+                                                <div class="accordion-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="leaderboard" id="perm_leaderboard"><label class="form-check-label" for="perm_leaderboard">Leaderboard Page Access</label></div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Stock Report -->
+                                <div class="col-12 mt-3">
+                                    <div class="accordion" id="stockReportAccordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingStockReport">
+                                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStockReport" aria-expanded="false" aria-controls="collapseStockReport">
+                                                    Stock Report
+                                                </button>
+                                            </h2>
+                                            <div id="collapseStockReport" class="accordion-collapse collapse" aria-labelledby="headingStockReport" data-bs-parent="#permissionsAccordion">
+                                                <div class="accordion-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="stock_report" id="perm_stock_report"><label class="form-check-label" for="perm_stock_report">Stock Report Page Access</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-6"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="stock_report_see_data" id="perm_stock_report_see_data"><label class="form-check-label" for="perm_stock_report_see_data">Get stock report</label></div></div>
+                                                        <div class="col-md-6"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="stock_report_adjust_stock" id="perm_stock_report_adjust_stock"><label class="form-check-label" for="perm_stock_report_adjust_stock">Adjust Stock Button</label></div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Stock Adjust -->
+                                <div class="col-12 mt-3">
+                                    <div class="accordion" id="stockAdjustAccordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingStockAdjust">
+                                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStockAdjust" aria-expanded="false" aria-controls="collapseStockAdjust">
+                                                    Stock Adjust
+                                                </button>
+                                            </h2>
+                                            <div id="collapseStockAdjust" class="accordion-collapse collapse" aria-labelledby="headingStockAdjust" data-bs-parent="#permissionsAccordion">
+                                                <div class="accordion-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="stock_adjust" id="perm_stock_adjust"><label class="form-check-label" for="perm_stock_adjust">Stock Adjust Page Access</label></div></div>
+                                                    <hr class="my-2">
+                                                    <div class="col-md-6"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="stock_adjust_get_report" id="perm_stock_adjust_get_report"><label class="form-check-label" for="perm_stock_adjust_get_report">Get Stock Report</label></div></div>
+                                                    <div class="col-md-6"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="stock_adjust_action" id="perm_stock_adjust_action"><label class="form-check-label" for="perm_stock_adjust_action">Adjust stock</label></div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- All Product -->
+                                <div class="col-12 mt-3">
+                                    <div class="accordion" id="allProductAccordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingAllProduct">
+                                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAllProduct" aria-expanded="false" aria-controls="collapseAllProduct">
+                                                    All Product
+                                                </button>
+                                            </h2>
+                                            <div id="collapseAllProduct" class="accordion-collapse collapse" aria-labelledby="headingAllProduct" data-bs-parent="#permissionsAccordion">
+                                                <div class="accordion-body">
+                                                    <div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" value="all_product" id="perm_all_product"><label class="form-check-label fw-bold" for="perm_all_product">All Product Page Access</label></div>
+                                                    <hr class="my-2">
+                                                    <div class="form-check form-switch form-check-inline"><input class="form-check-input" type="checkbox" value="all_product_details" id="perm_all_product_details"><label class="form-check-label" for="perm_all_product_details">Details</label></div>
+                                                    <div class="form-check form-switch form-check-inline"><input class="form-check-input" type="checkbox" value="all_product_edit" id="perm_all_product_edit"><label class="form-check-label" for="perm_all_product_edit">Edit</label></div>
+                                                    <div class="form-check form-switch form-check-inline"><input class="form-check-input" type="checkbox" value="all_product_delete" id="perm_all_product_delete"><label class="form-check-label" for="perm_all_product_delete">Delete</label></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Add Sale History -->
+                                <div class="col-12 mt-3">
+                                    <div class="accordion" id="addSaleHistoryAccordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingAddSaleHistory">
+                                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAddSaleHistory" aria-expanded="false" aria-controls="collapseAddSaleHistory">
+                                                    Add Sale History
+                                                </button>
+                                            </h2>
+                                            <div id="collapseAddSaleHistory" class="accordion-collapse collapse" aria-labelledby="headingAddSaleHistory" data-bs-parent="#permissionsAccordion">
+                                                <div class="accordion-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="add_sale_record" id="perm_add_sale_record"><label class="form-check-label" for="perm_add_sale_record">Add Sale History Page Access</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="add_sale_record_total_revenue" id="perm_add_sale_record_total_revenue"><label class="form-check-label" for="perm_add_sale_record_total_revenue">Total Revenue</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="add_sale_record_total_sales" id="perm_add_sale_record_total_sales"><label class="form-check-label" for="perm_add_sale_record_total_sales">Total Sales</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="add_sale_record_avg_sale_value" id="perm_add_sale_record_avg_sale_value"><label class="form-check-label" for="perm_add_sale_record_avg_sale_value">Avg. Sale Value</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="add_sale_record_details" id="perm_add_sale_record_details"><label class="form-check-label" for="perm_add_sale_record_details">Details</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="add_sale_record_edit" id="perm_add_sale_record_edit"><label class="form-check-label" for="perm_add_sale_record_edit">Edit</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="add_sale_record_delete" id="perm_add_sale_record_delete"><label class="form-check-label" for="perm_add_sale_record_delete">Delete</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="add_sale_record_return" id="perm_add_sale_record_return"><label class="form-check-label" for="perm_add_sale_record_return">Return</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="add_sale_record_clear_history" id="perm_add_sale_record_clear_history"><label class="form-check-label" for="perm_add_sale_record_clear_history">Clear History</label></div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- POS Sale History -->
+                                <div class="col-12 mt-3">
+                                    <div class="accordion" id="posSaleHistoryAccordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingPosSaleHistory">
+                                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePosSaleHistory" aria-expanded="false" aria-controls="collapsePosSaleHistory">
+                                                    POS Sale History
+                                                </button>
+                                            </h2>
+                                            <div id="collapsePosSaleHistory" class="accordion-collapse collapse" aria-labelledby="headingPosSaleHistory" data-bs-parent="#permissionsAccordion">
+                                                <div class="accordion-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="pos_sale_history" id="perm_pos_sale_history"><label class="form-check-label" for="perm_pos_sale_history">POS Sale History Page Access</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="pos_sale_history_total_revenue" id="perm_pos_sale_history_total_revenue"><label class="form-check-label" for="perm_pos_sale_history_total_revenue">Total Revenue</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="pos_sale_history_total_sales" id="perm_pos_sale_history_total_sales"><label class="form-check-label" for="perm_pos_sale_history_total_sales">Total Sales</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="pos_sale_history_avg_sale_value" id="perm_pos_sale_history_avg_sale_value"><label class="form-check-label" for="perm_pos_sale_history_avg_sale_value">Avg. Sale Value</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="pos_sale_history_total_profit" id="perm_pos_sale_history_total_profit"><label class="form-check-label" for="perm_pos_sale_history_total_profit">Total Profit</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="pos_sale_history_details" id="perm_pos_sale_history_details"><label class="form-check-label" for="perm_pos_sale_history_details">Details</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="pos_sale_history_edit" id="perm_pos_sale_history_edit"><label class="form-check-label" for="perm_pos_sale_history_edit">Edit</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="pos_sale_history_pay" id="perm_pos_sale_history_pay"><label class="form-check-label" for="perm_pos_sale_history_pay">Pay</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="pos_sale_history_delete" id="perm_pos_sale_history_delete"><label class="form-check-label" for="perm_pos_sale_history_delete">Delete</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="pos_sale_history_return" id="perm_pos_sale_history_return"><label class="form-check-label" for="perm_pos_sale_history_return">Return</label></div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Customer -->
+                                <div class="col-12 mt-3">
+                                    <div class="accordion" id="customerAccordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingCustomer">
+                                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCustomer" aria-expanded="false" aria-controls="collapseCustomer">
+                                                    Customer
+                                                </button>
+                                            </h2>
+                                            <div id="collapseCustomer" class="accordion-collapse collapse" aria-labelledby="headingCustomer" data-bs-parent="#permissionsAccordion">
+                                                <div class="accordion-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="customer" id="perm_customer"><label class="form-check-label" for="perm_customer">Customer Page Access</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="customer_total_customers" id="perm_customer_total_customers"><label class="form-check-label" for="perm_customer_total_customers">Total Customers</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="customer_total_sales" id="perm_customer_total_sales"><label class="form-check-label" for="perm_customer_total_sales">Total Sales</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="customer_total_due" id="perm_customer_total_due"><label class="form-check-label" for="perm_customer_total_due">Total Due</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="customer_add" id="perm_customer_add"><label class="form-check-label" for="perm_customer_add">Add</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="customer_details" id="perm_customer_details"><label class="form-check-label" for="perm_customer_details">Details</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="customer_edit" id="perm_customer_edit"><label class="form-check-label" for="perm_customer_edit">Edit</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="customer_delete" id="perm_customer_delete"><label class="form-check-label" for="perm_customer_delete">Delete</label></div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Supplier -->
+                                <div class="col-12 mt-3">
+                                    <div class="accordion" id="supplierAccordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingSupplier">
+                                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSupplier" aria-expanded="false" aria-controls="collapseSupplier">
+                                                    Supplier
+                                                </button>
+                                            </h2>
+                                            <div id="collapseSupplier" class="accordion-collapse collapse" aria-labelledby="headingSupplier" data-bs-parent="#permissionsAccordion">
+                                                <div class="accordion-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="supplier" id="perm_supplier"><label class="form-check-label" for="perm_supplier">Supplier Page Access</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="supplier_total_purchased" id="perm_supplier_total_purchased"><label class="form-check-label" for="perm_supplier_total_purchased">Total Purchased</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="supplier_total_due" id="perm_supplier_total_due"><label class="form-check-label" for="perm_supplier_total_due">Total Due</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="supplier_total_return" id="perm_supplier_total_return"><label class="form-check-label" for="perm_supplier_total_return">Total Return</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="supplier_add" id="perm_supplier_add"><label class="form-check-label" for="perm_supplier_add">Add</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="supplier_details" id="perm_supplier_details"><label class="form-check-label" for="perm_supplier_details">Details</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="supplier_edit" id="perm_supplier_edit"><label class="form-check-label" for="perm_supplier_edit">Edit</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="supplier_delete" id="perm_supplier_delete"><label class="form-check-label" for="perm_supplier_delete">Delete</label></div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 mt-3">
+                                    <div class="accordion" id="purchaseHistoryAccordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingPurchaseHistory">
+                                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePurchaseHistory" aria-expanded="false" aria-controls="collapsePurchaseHistory">
+                                                    Purchase History
+                                                </button>
+                                            </h2>
+                                            <div id="collapsePurchaseHistory" class="accordion-collapse collapse" aria-labelledby="headingPurchaseHistory" data-bs-parent="#permissionsAccordion">
+                                                <div class="accordion-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_history" id="perm_purchase_history"><label class="form-check-label" for="perm_purchase_history">Purchase History Page Access</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-6"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_history_total_purchase_due" id="perm_purchase_history_total_purchase_due"><label class="form-check-label" for="perm_purchase_history_total_purchase_due">Total Purchase Due</label></div></div>
+                                                        <div class="col-md-6"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_history_avg_purchase_value" id="perm_purchase_history_avg_purchase_value"><label class="form-check-label" for="perm_purchase_history_avg_purchase_value">Avg. Purchase Value</label></div></div>
+                                                        <div class="col-md-6"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_history_total_purchases" id="perm_purchase_history_total_purchases"><label class="form-check-label" for="perm_purchase_history_total_purchases">Total Purchases</label></div></div>
+                                                        <div class="col-md-6"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_history_total_purchase_value" id="perm_purchase_history_total_purchase_value"><label class="form-check-label" for="perm_purchase_history_total_purchase_value">Total Purchase Value</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_history_details" id="perm_purchase_history_details"><label class="form-check-label" for="perm_purchase_history_details">Details</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_history_edit" id="perm_purchase_history_edit"><label class="form-check-label" for="perm_purchase_history_edit">Edit</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_history_pay" id="perm_purchase_history_pay"><label class="form-check-label" for="perm_purchase_history_pay">Pay</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_history_delete" id="perm_purchase_history_delete"><label class="form-check-label" for="perm_purchase_history_delete">Delete</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_history_clear_history" id="perm_purchase_history_clear_history"><label class="form-check-label" for="perm_purchase_history_clear_history">Clear History</label></div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Sell Return History -->
+                                <div class="col-12 mt-3">
+                                    <div class="accordion" id="sellReturnHistoryAccordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingSellReturnHistory">
+                                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSellReturnHistory" aria-expanded="false" aria-controls="collapseSellReturnHistory">
+                                                    Sell Return History
+                                                </button>
+                                            </h2>
+                                            <div id="collapseSellReturnHistory" class="accordion-collapse collapse" aria-labelledby="headingSellReturnHistory" data-bs-parent="#permissionsAccordion">
+                                                <div class="accordion-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="sell_return_history" id="perm_sell_return_history"><label class="form-check-label" for="perm_sell_return_history">Sell Return History Page Access</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="sell_return_history_total_value" id="perm_sell_return_history_total_value"><label class="form-check-label" for="perm_sell_return_history_total_value">Total Return Value</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="sell_return_history_total_returns" id="perm_sell_return_history_total_returns"><label class="form-check-label" for="perm_sell_return_history_total_returns">Total Returns</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="sell_return_history_avg_value" id="perm_sell_return_history_avg_value"><label class="form-check-label" for="perm_sell_return_history_avg_value">Avg. Return Value</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="sell_return_history_details" id="perm_sell_return_history_details"><label class="form-check-label" for="perm_sell_return_history_details">Details</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="sell_return_history_edit" id="perm_sell_return_history_edit"><label class="form-check-label" for="perm_sell_return_history_edit">Edit</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="sell_return_history_delete" id="perm_sell_return_history_delete"><label class="form-check-label" for="perm_sell_return_history_delete">Delete</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="sell_return_history_clear_history" id="perm_sell_return_history_clear_history"><label class="form-check-label" for="perm_sell_return_history_clear_history">Clear History</label></div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Purchase Return History -->
+                                <div class="col-12 mt-3">
+                                    <div class="accordion" id="purchaseReturnHistoryAccordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingPurchaseReturnHistory">
+                                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePurchaseReturnHistory" aria-expanded="false" aria-controls="collapsePurchaseReturnHistory">
+                                                    Purchase Return History
+                                                </button>
+                                            </h2>
+                                            <div id="collapsePurchaseReturnHistory" class="accordion-collapse collapse" aria-labelledby="headingPurchaseReturnHistory" data-bs-parent="#permissionsAccordion">
+                                                <div class="accordion-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_return_history" id="perm_purchase_return_history"><label class="form-check-label" for="perm_purchase_return_history">Purchase Return History Page Access</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-6"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_return_history_total_value" id="perm_purchase_return_history_total_value"><label class="form-check-label" for="perm_purchase_return_history_total_value">Total Purchase Return Value</label></div></div>
+                                                        <div class="col-md-6"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_return_history_total_returns" id="perm_purchase_return_history_total_returns"><label class="form-check-label" for="perm_purchase_return_history_total_returns">Total Purchase Returns</label></div></div>
+                                                        <div class="col-md-6"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_return_history_avg_value" id="perm_purchase_return_history_avg_value"><label class="form-check-label" for="perm_purchase_return_history_avg_value">Avg. Purchase Return Value</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_return_history_details" id="perm_purchase_return_history_details"><label class="form-check-label" for="perm_purchase_return_history_details">Details</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_return_history_edit" id="perm_purchase_return_history_edit"><label class="form-check-label" for="perm_purchase_return_history_edit">Edit</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_return_history_delete" id="perm_purchase_return_history_delete"><label class="form-check-label" for="perm_purchase_return_history_delete">Delete</label></div></div>
+                                                        <div class="col-md-3"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="purchase_return_history_clear_history" id="perm_purchase_return_history_clear_history"><label class="form-check-label" for="perm_purchase_return_history_clear_history">Clear History</label></div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Profit & Loss Report -->
+                                <div class="col-12 mt-3">
+                                    <div class="accordion" id="pnlAccordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingPnl">
+                                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePnl" aria-expanded="false" aria-controls="collapsePnl">
+                                                    Profit & Loss Report
+                                                </button>
+                                            </h2>
+                                            <div id="collapsePnl" class="accordion-collapse collapse" aria-labelledby="headingPnl" data-bs-parent="#permissionsAccordion">
+                                                <div class="accordion-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="profit_and_loss" id="perm_profit_and_loss"><label class="form-check-label" for="perm_profit_and_loss">Profit & Loss Report Page Access</label></div></div>
+                                                        <hr class="my-2">
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="profit_and_loss_total_sales" id="perm_profit_and_loss_total_sales"><label class="form-check-label" for="perm_profit_and_loss_total_sales">Total Sales</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="profit_and_loss_cogs" id="perm_profit_and_loss_cogs"><label class="form-check-label" for="perm_profit_and_loss_cogs">Cost of Goods Sold</label></div></div>
+                                                        <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" value="profit_and_loss_gross_profit" id="perm_profit_and_loss_gross_profit"><label class="form-check-label" for="perm_profit_and_loss_gross_profit">Gross Profit</label></div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" form="employeeForm" class="btn btn-primary">Save Employee</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal (for sidebar consistency) -->
+    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addProductModalLabel">Add New Product</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Simplified: In a real app, this would be a shared component -->
+                    <p>Add product form would be here...</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save Product</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Switcher -->
+    <div class="theme-switch-wrapper">
+        <button id="theme-switcher" aria-label="Toggle theme">
+            <span class="slider-thumb bg-secondary">
+                <svg class="sun" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                    fill="currentColor" viewBox="0 0 16 16">
+                    <path
+                        d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
+                </svg>
+                <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    viewBox="0 0 16 16">
+                    <path
+                        d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
+                </svg>
+            </span>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- DOM Element Selectors ---
+            const logoutButton = document.getElementById('logoutButton');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            const employeeListContainer = document.getElementById('employeeListContainer');
+            const addEmployeeBtn = document.getElementById('addEmployeeBtn');
+            const employeeModalEl = document.getElementById('employeeModal');
+            const employeeModal = new bootstrap.Modal(employeeModalEl);
+            const employeeForm = document.getElementById('employeeForm');
+            const employeeModalLabel = document.getElementById('employeeModalLabel');
+            const searchInput = document.getElementById('employeeSearchInput'); // This is correct
+            const permissionsContainer = document.querySelector('#employeeModal #permissionsContainer .row');
+
+            // --- Permission Definitions ---
+
+            function hasPermission(user, permission) {
+                if (!user) return false;
+                if (user.role === 'admin') return true;
+                return user.permissions && user.permissions.includes(permission);
+            }
+
+            // --- Initialize User Data ---
+            let allEmployees = [];
+            let currentUser = null;
+            let db; // Firestore instance
+            const ALL_PERMISSIONS = {
+                'dashboard': 'Dashboard', 'all_product': 'All Product', 'all_product_details': 'Product Details', 'all_product_edit': 'Product Edit', 'all_product_delete': 'Product Delete',
+                'dashboard_total_sale_bdt': 'Total Sale (BDT)',
+                'dashboard_total_purchase': 'Total Purchase',
+                'dashboard_total_sales_count': 'Total Sales',
+                'dashboard_net_profit': 'Net Profit',
+                'dashboard_total_purchase_due': 'Total Purchase Due',
+                'dashboard_total_sale_due': 'Total Sale Due',
+                'dashboard_total_sale_return': 'Total Sale Return (TSR)',
+                'dashboard_total_purchase_return': 'Total Purchase Return (TPR)',
+                'dashboard_total_products': 'Total Products',
+                'dashboard_items_in_stock': 'Items in Stock',
+                'dashboard_out_of_stock': 'Out of Stock',
+                'dashboard_categories': 'Categories',
+                'dashboard_stock_alert': 'Stock Alert',
+                'dashboard_total_customers': 'Total Customers',
+                'dashboard_total_suppliers': 'Total Suppliers',
+                'dashboard_total_employees': 'Total Employees',
+                'dashboard_top_selling_products': 'Top Selling Products',
+                'dashboard_products_by_category': 'Products by Category Chart',
+                'dashboard_stock_distribution': 'Stock Distribution Chart', 'purchase_history_total_purchase_due': 'PH: Total Purchase Due',
+                'purchase_history_avg_purchase_value': 'PH: Avg. Purchase Value',
+                'purchase_history_total_purchases': 'PH: Total Purchases',
+                'purchase_history_total_purchase_value': 'PH: Total Purchase Value',
+                'purchase_history_clear_history': 'PH: Clear History',
+                'dashboard_30_day_sales': '30-Day Sales Overview', 'dashboard_30_day_sale_due': '30-Day Sale Due Overview', 'dashboard_30_day_sale_return': '30-Day Sale Return Overview',
+                'dashboard_30_day_purchase': '30-Day Purchase Overview', 'dashboard_30_day_purchase_due': '30-Day Purchase Due Overview', 'dashboard_30_day_purchase_return': '30-Day Purchase Return Overview',
+                'dashboard_fy_sales': 'Financial Year Sales', 'dashboard_fy_sale_due': 'Financial Year Sale Due', 'dashboard_fy_purchase_due': 'Financial Year Purchase Due', 'dashboard_fy_purchase': 'Financial Year Purchase', 'dashboard_fy_sell_return': 'Financial Year Sell Return', 'dashboard_fy_purchase_return': 'Financial Year Purchase Return',
+                'purchase': 'Purchase', 'purchase_history': 'Purchase History', 'purchase_history_details': 'Purchase Details', 'purchase_history_edit': 'Purchase Edit', 'purchase_history_pay': 'Purchase Pay', 'purchase_history_delete': 'Purchase Delete', 'purchase_return': 'Purchase Return',
+                'add_sale_record': 'Sale Record', 'add_sale_record_total_revenue': 'ASR: Total Revenue', 'add_sale_record_total_sales': 'ASR: Total Sales', 'add_sale_record_avg_sale_value': 'ASR: Avg. Sale Value', 'add_sale_record_details': 'Sale Record Details', 'add_sale_record_edit': 'Sale Record Edit', 'add_sale_record_delete': 'Sale Record Delete', 'add_sale_record_return': 'Sale Record Return', 'add_sale_record_clear_history': 'ASR: Clear History',
+                'customer': 'Customer Page', 'customer_add': 'Add Customer', 'customer_details': 'Customer Details', 'customer_edit': 'Edit Customer', 'customer_delete': 'Delete Customer',
+                'customer_total_customers': 'C: Total Customers', 'customer_total_sales': 'C: Total Sales', 'customer_total_due': 'C: Total Due',
+                'supplier': 'Supplier Page', 'supplier_add': 'Add Supplier', 'supplier_details': 'Supplier Details', 'supplier_edit': 'Edit Supplier', 'supplier_delete': 'Delete Supplier',
+                'supplier_total_purchased': 'S: Total Purchased', 'supplier_total_due': 'S: Total Due', 'supplier_total_return': 'S: Total Return',
+                'pos_sale_history': 'POS History Page',
+                'pos_sale_history_total_revenue': 'POS: Total Revenue', 'pos_sale_history_total_sales': 'POS: Total Sales', 'pos_sale_history_avg_sale_value': 'POS: Avg Sale Value', 'pos_sale_history_total_profit': 'POS: Total Profit',
+                'pos_sale_history_details': 'POS: Details', 'pos_sale_history_edit': 'POS: Edit', 'pos_sale_history_pay': 'POS: Pay', 'pos_sale_history_delete': 'POS: Delete', 'pos_sale_history_return': 'POS: Return',
+                'add_product': 'Add Product Page', 'sell_return': 'Sell Return Page',
+                'sell_return_history': 'Sell Return History', 'sell_return_history_edit': 'Edit Sell Return', 'sell_return_history_details': 'Sell Return Details', 'sell_return_history_delete': 'Delete Sell Return',
+                'sell_return_history_total_value': 'SRH: Total Value', 'sell_return_history_total_returns': 'SRH: Total Returns', 'sell_return_history_avg_value': 'SRH: Avg. Value', 'sell_return_history_clear_history': 'SRH: Clear History',
+                'purchase_return_history': 'Purchase Return History', 'purchase_return_history_total_value': 'PRH: Total Value', 'purchase_return_history_total_returns': 'PRH: Total Returns', 'purchase_return_history_avg_value': 'PRH: Avg. Value', 'purchase_return_history_details': 'Purchase Return Details', 'purchase_return_history_edit': 'Edit Purchase Return', 'purchase_return_history_delete': 'Delete Purchase Return', 'purchase_return_history_clear_history': 'PRH: Clear History',
+                'sell_return_history_total_value': 'SRH: Total Value',
+                'sell_return_history_total_returns': 'SRH: Total Returns', 'sell_return_history_avg_value': 'SRH: Avg. Value', 'sell_return_history_clear_history': 'SRH: Clear History'
+                // Legacy permissions for compatibility & special permissions
+                , 'manage_employees': 'Manage Employees'
+                , 'products': 'Products', 'sales': 'Sales', 'people': 'People', 'edit': 'Edit Data', 'clear_history': 'Clear History',
+                'reports': 'Reports', 'profit_and_loss': 'Profit & Loss', 'stock_report': 'Stock Report', 'stock_adjust': 'Stock Adjust',
+                'profit_and_loss_total_sales': 'P&L: Total Sales', 'profit_and_loss_cogs': 'P&L: Cost of Goods Sold', 'profit_and_loss_gross_profit': 'P&L: Gross Profit',
+                'stock_report_see_data': 'Get stock report',
+                'stock_report_adjust_stock': 'Stock Report: Adjust Stock',
+                'stock_adjust_action': 'Adjust stock',
+                'stock_adjust_get_report': 'Get Stock Report'
+                
+            };
+
+            // --- Employee Management UI & Logic ---
+            function renderEmployees(employeesToRender) {
+                employeeListContainer.innerHTML = '';
+                if (employeesToRender.length === 0) {
+                    employeeListContainer.innerHTML = '<p class="text-center text-muted p-4">No employee accounts found.</p>';
+                    return;
+                }
+                const list = document.createElement('ul');
+                list.className = 'list-group list-group-flush';
+                employeesToRender.forEach(employee => {
+                    const permissionsList = employee.permissions?.map(p => `<span class="badge bg-secondary-subtle text-secondary-emphasis me-1">${ALL_PERMISSIONS[p] || p}</span>`).join('') || '<span class="text-muted small">No permissions</span>';
+                    const listItem = document.createElement('li');
+                    listItem.className = 'list-group-item p-3';
+                    listItem.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">${employee.name}</h6>
+                                <small class="text-muted">Code: ${employee.code}</small>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-success details-employee-btn" data-id="${employee.firestoreId}" title="View Details">Details</button>
+                                <button class="btn btn-sm btn-warning edit-employee-btn" data-id="${employee.firestoreId}" title="Edit Employee">Edit</button>
+                                <button class="btn btn-sm btn-danger delete-employee-btn" data-id="${employee.firestoreId}" title="Delete Employee">Delete</button>
+                            </div>
+                        </div>
+                        <div class="mt-2 permission-checkbox-group p-2">
+                            ${permissionsList}
+                        </div>`;
+                    list.appendChild(listItem);
+                });
+                employeeListContainer.appendChild(list);
+            }
+
+            function openEmployeeModal(userToEdit = null) {
+                employeeForm.reset();
+                document.getElementById('employeeId').value = userToEdit ? userToEdit.firestoreId : '';
+
+                if (userToEdit) {
+                    employeeModalLabel.textContent = 'Edit Employee';
+                    document.getElementById('firstName').value = userToEdit.firstName || userToEdit.name.split(' ')[0] || '';
+                    document.getElementById('lastName').value = userToEdit.lastName || userToEdit.name.split(' ').slice(1).join(' ') || '';
+                    document.getElementById('language').value = userToEdit.language || '';
+                    document.getElementById('employeeUsername').value = userToEdit.username || userToEdit.name; // Keep this line to show the current username
+                    document.getElementById('employeeUsername').readOnly = false; // Allow changing username
+                    document.getElementById('employeeCode').value = userToEdit.code;
+                    document.getElementById('passwordHelpBlock').style.display = 'block';
+                    document.getElementById('employeeMobile').value = userToEdit.mobile || '';
+                    document.getElementById('employeeEmail').value = userToEdit.email || '';
+                    document.getElementById('employeeLocation').value = userToEdit.location || '';
+                    document.getElementById('employeePassword').required = false;
+
+                    // Check the user's permissions
+                    permissionsContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                        cb.checked = userToEdit.permissions?.includes(cb.value);
+                    });
+                } else {
+                    employeeModalLabel.textContent = 'Add New Employee';
+                    document.getElementById('employeeUsername').readOnly = false;
+                    document.getElementById('passwordHelpBlock').style.display = 'none';
+                    document.getElementById('employeePassword').required = true;
+                }
+                employeeModal.show();
+            }
+
+            function showEmployeeDetails(employeeId) {
+                const employee = allEmployees.find(u => u.firestoreId === employeeId);
+                if (!employee) return;
+
+                const permissionsList = employee.permissions?.map(p => `<span class="badge bg-primary-subtle text-primary-emphasis me-1">${ALL_PERMISSIONS[p] || p}</span>`).join('') || '<span class="text-muted">No specific permissions</span>';
+
+                const detailsHtml = `
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" fill="currentColor" class="bi bi-person-circle text-muted" viewBox="0 0 16 16">
+                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+                            </svg>
+                        </div>
+                        <div class="col-md-8">
+                            <h3>${employee.name}</h3>
+                            <p class="fs-5 text-muted">Employee Code: ${employee.code}</p>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between"><span>Mobile:</span> <strong>${employee.mobile || 'N/A'}</strong></li>
+                                <li class="list-group-item d-flex justify-content-between"><span>Email:</span> <strong>${employee.email || 'N/A'}</strong></li>
+                                <li class="list-group-item d-flex justify-content-between"><span>Location:</span> <strong>${employee.location || 'N/A'}</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <hr>
+                    <h5 class="mt-4">Assigned Permissions</h5>
+                    <div class="p-3 rounded bg-light-subtle">
+                        ${permissionsList}
+                    </div>
+                `;
+                document.getElementById('employeeDetailsContainer').innerHTML = detailsHtml;
+                new bootstrap.Modal(document.getElementById('employeeDetailsModal')).show();
+            }
+
+            employeeForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const { doc, setDoc, updateDoc, collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js");
+                const employeeIdToEdit = document.getElementById('employeeId').value;
+                const firstName = document.getElementById('firstName').value.trim();
+                const lastName = document.getElementById('lastName').value.trim();
+                const name = `${firstName} ${lastName}`.trim();
+                const username = document.getElementById('employeeUsername').value.trim();
+                const password = document.getElementById('employeePassword').value;
+                const code = document.getElementById('employeeCode').value.trim();
+                const mobile = document.getElementById('employeeMobile').value.trim();
+                const email = document.getElementById('employeeEmail').value.trim();
+                const location = document.getElementById('employeeLocation').value.trim();
+                const language = document.getElementById('language').value.trim();
+                const permissions = Array.from(permissionsContainer.querySelectorAll('input:checked')).map(cb => cb.value);
+                const role = permissions.includes('manage_employees') ? 'admin' : 'employee';
+
+                if (employeeIdToEdit) { // Editing existing user
+                    const employeeRef = doc(db, "users", employeeIdToEdit);
+                    const dataToUpdate = { code, permissions, role, mobile, email, location };
+                    if (password) dataToUpdate.password = password;
+
+                    try {
+                        await updateDoc(employeeRef, dataToUpdate);
+                        alert(`Employee "${name}" updated.`);
+                    } catch (error) {
+                        console.error("Error updating employee:", error);
+                        alert("Failed to update employee.");
+                    }
+                } else { // Adding new user
+                    const existingUserQuery = query(collection(db, "users"), where("username", "==", username));
+                    const existingUserSnapshot = await getDocs(existingUserQuery);
+                    if (!existingUserSnapshot.empty) {
+                        alert('An employee with this username already exists.');
+                        return;
+                    }
+                    try {
+                        const employeeIds = allEmployees
+                            .map(emp => emp.firestoreId)
+                            .filter(id => id.startsWith('E-'))
+                            .map(id => parseInt(id.split('-')[1], 10))
+                            .filter(num => !isNaN(num));
+                        const maxId = employeeIds.length > 0 ? Math.max(...employeeIds) : 0;
+                        const newEmployeeId = `E-${maxId + 1}`;
+
+                        const newEmployeeRef = doc(db, "users", newEmployeeId);
+                        await setDoc(newEmployeeRef, { name, username, password, code, role, permissions, mobile, email, location, firstName, lastName, language });
+
+                        alert(`Employee account for "${name}" created.`);
+                    } catch (error) {
+                        console.error("Error adding employee:", error);
+                        alert("Failed to add employee.");
+                    }
+                }
+
+                loadAndRenderEmployees();
+                employeeModal.hide();
+            });
+
+            employeeListContainer.addEventListener('click', async (e) => {
+                const target = e.target.closest('.details-employee-btn, .edit-employee-btn, .delete-employee-btn');
+                if (!target) return;
+                const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js");
+
+                const employeeId = target.dataset.id;
+                const employee = allEmployees.find(u => u.firestoreId === employeeId);
+                if (!employee) return;
+
+                if (target.classList.contains('details-employee-btn')) {
+                    showEmployeeDetails(employeeId);
+                } else if (target.classList.contains('edit-employee-btn')) {
+                    openEmployeeModal(employee);
+                } else if (target.classList.contains('delete-employee-btn')) {
+                    if (confirm(`Are you sure you want to delete the account for "${employee.name}"?`)) {
+                        try {
+                            await deleteDoc(doc(db, "users", employeeId));
+                            alert('Employee deleted.');
+                            loadAndRenderEmployees();
+                        } catch (error) {
+                            console.error("Error deleting employee:", error);
+                            alert("Failed to delete employee.");
+                        }
+                    }
+                }
+            });
+
+            function filterAndRenderEmployees() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const filtered = allEmployees.filter(emp =>
+                    emp.name.toLowerCase().includes(searchTerm) ||
+                    emp.code.toLowerCase().includes(searchTerm)
+                );
+                renderEmployees(filtered);
+            }
+
+            addEmployeeBtn.addEventListener('click', () => openEmployeeModal());
+
+            // --- Shared Page Logic (Auth, Theme) ---
+            function setupSharedLogic(user) {
+                function hasPermissionForNav(p_user, mainPerm, relatedPerms = []) {
+                    if (hasPermission(p_user, mainPerm)) {
+                        return true;
+                    }
+                    for (const perm of relatedPerms) {
+                        if (hasPermission(p_user, perm)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+                if (user && user.name) {
+                    welcomeMessage.textContent = `Welcome, ${user.name.split(' ')[0]}`;
+                }
+
+                logoutButton.addEventListener('click', async () => {
+                    const { getAuth, signOut } = await import("https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js");
+                    const { app } = await import('./firebase-init.js');
+                    const auth = getAuth(app);
+                    sessionStorage.clear();
+                    signOut(auth).then(() => {
+                        window.location.href = 'signin.html';
+                    }).catch((error) => {
+                        console.error('Sign out error', error);
+                        window.location.href = 'signin.html'; // Still redirect
+                    });
+                });
+                const navItems = {
+                    'dashboard': { el: document.querySelector('a[href="dashboard.html"]')?.closest('.nav-item'), perm: 'dashboard' },
+                    'products': { el: document.querySelector('a[href="#productSubmenu"]')?.closest('.nav-item'), perm: 'products', related: ['all_product', 'add_product'] },
+                    'purchase': { el: document.querySelector('a[href="#purchaseSubmenu"]')?.closest('.nav-item'), perm: 'purchase', related: ['purchase_return', 'purchase_return_history'] },
+                    'sales': { el: document.querySelector('a[href="#salesSubmenu"]')?.closest('.nav-item'), perm: 'sales', related: ['add_sale', 'add_sale_record', 'pos_sale_history', 'sell_return', 'sell_return_history'] },
+                    'people': { el: document.querySelector('a[href="#peopleSubmenu"]')?.closest('.nav-item'), perm: 'people', related: ['customer', 'supplier'] },
+                    'leaderboard': { el: document.getElementById('leaderboard-nav-item'), perm: 'leaderboard' },
+                    'employee': { el: document.getElementById('employee-nav-item'), perm: 'manage_employees' },
+                    'account': { el: document.querySelector('a[href="account.html"]')?.closest('.nav-item'), perm: null }, // Always visible
+                    'pos': { el: document.querySelector('a[href="pos.html"]'), perm: 'pos' }
+                };
+
+                for (const key in navItems) {
+                    const item = navItems[key];
+                    if (item.el) {
+                        if (item.perm === null || hasPermissionForNav(user, item.perm, item.related || [])) {
+                            item.el.style.display = ''; // Show item
+                        } else {
+                            item.el.style.display = 'none'; // Hide item
+                        }
+                    }
+                
+            }
+
+                // --- Theme Switcher (inside setupSharedLogic) ---
+                 const themeSwitcher = document.getElementById('theme-switcher');
+                 const htmlEl = document.documentElement;
+                 const applyTheme = (theme) => {
+                     const effectiveTheme = theme || 'light';
+                     htmlEl.setAttribute('data-bs-theme', effectiveTheme);
+                     updateSwitcherUI(effectiveTheme);
+                 };
+                 function updateSwitcherUI(theme) {
+                     const thumb = themeSwitcher.querySelector('.slider-thumb');
+                     const sunIcon = themeSwitcher.querySelector('.sun');
+                     const moonIcon = themeSwitcher.querySelector('.moon');
+                     thumb.style.transform = theme === 'dark' ? 'translateX(30px)' : 'translateX(0px)';
+                     if (sunIcon) sunIcon.style.display = theme === 'dark' ? 'block' : 'none';
+                     if (moonIcon) moonIcon.style.display = theme === 'dark' ? 'none' : 'block';
+                 }
+                 applyTheme(user.theme);
+                 themeSwitcher.addEventListener('click', async() => {
+                     const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js");
+                     const newTheme = htmlEl.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                     applyTheme(newTheme);
+                     const userDocRef = doc(db, "users", user.id); // Use user.id from the function parameter
+                     await updateDoc(userDocRef, { theme: newTheme });
+                     if (currentUser) currentUser.theme = newTheme; // Also update the global object if it exists
+                 });
+            }
+
+
+            // --- Initial Page Load ---
+            async function loadAndRenderEmployees() {
+                const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js");
+                const employeesQuery = query(collection(db, "users"), where("role", "==", "employee"));
+                const querySnapshot = await getDocs(employeesQuery);
+                allEmployees = querySnapshot.docs.map(doc => ({ firestoreId: doc.id, ...doc.data() }));
+                filterAndRenderEmployees();
+            }
+
+            async function init() {
+                const { getFirestore, collection, query, where, getDocs, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js");
+                const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js");
+                const { app } = await import('./firebase-init.js');
+                db = getFirestore(app);
+                const auth = getAuth(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    const sessionUserId = sessionStorage.getItem('loggedInUserId');
+                    let userIdToFetch = user ? user.uid : sessionUserId;
+
+                    if (userIdToFetch) {
+                        const userDocRef = doc(db, "users", userIdToFetch);
+                        const userDocSnap = await getDoc(userDocRef);
+                        if (userDocSnap.exists()) {
+                            currentUser = { id: userDocSnap.id, ...userDocSnap.data() };
+
+                            if (!hasPermission(currentUser, 'manage_employees') && !hasPermission(currentUser, 'people')) {
+                                alert('Access Denied. You do not have permission to manage employees.');
+                                window.location.href = 'dashboard.html';
+                                return;
+                            }
+
+                            setupSharedLogic(currentUser);
+                            searchInput.addEventListener('input', filterAndRenderEmployees);
+                            // The theme switcher is now initialized within setupSharedLogic
+                            await loadAndRenderEmployees();
+                        } else {
+                            console.error("User document not found in database.");
+                            alert("Authentication error. Please sign in again.");
+                            window.location.href = 'signin.html';
+                        }
+                    } else {
+                        alert("Authentication error. Please sign in again.");
+                        window.location.href = 'signin.html';
+                    }
+                });
+
+            }
+
+            init();
+        });
+    </script>
+    <script type="module" src="firebase-init.js"></script>
+</body>
+</html>

@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers</title>
+    <link rel="icon" href="logo.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bs-primary-rgb: 99, 102, 241;
+            --bs-primary: #6366f1;
+            --bs-body-font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--bs-body-font-family);
+            background-color: var(--bs-tertiary-bg);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100%;
+            padding-top: 56px;
+            
+            background-color: var(--bs-body-bg);
+            border-right: 1px solid var(--bs-border-color);
+            z-index: 1020;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            color: var(--bs-body-color);
+            padding: .75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: var(--bs-tertiary-bg);
+        }
+
+        .sidebar .nav-link.active {
+            color: var(--bs-primary);
+            font-weight: 600;
+            border-left-color: var(--bs-primary);
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding-top: 72px;
+            flex-grow: 1;
+            padding-bottom: 40px;
+        }
+        .theme-switch-wrapper {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 1001;
+        }
+        #theme-switcher {
+            background: none;
+            border: 1px solid var(--bs-border-color-translucent);
+            padding: 0;
+            cursor: pointer;
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: var(--bs-tertiary-bg);
+            border-radius: 15px;
+            transition: background-color 0.3s ease;
+        }
+        .slider-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-icon-container {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .footer {
+            background-color: var(--bs-body-bg);
+            padding: 1rem;
+            border-top: 1px solid var(--bs-border-color);
+            margin-left: 240px;
+        }
+
+        [data-bs-theme="dark"] .footer {
+            background: linear-gradient(270deg, #1e1b4b 0%, #3730a3 100%);
+        }
+
+        [data-bs-theme="light"] .footer {
+            background: linear-gradient(270deg, #e0e7ff 0%, #eef2ff 100%);
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        if (sessionStorage.getItem('isAuthenticated') !== 'true') {
+            window.location.href = 'signin.html';
+        }
+    </script>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.html" style="margin-left: 240px;">Baroda Computure And Sales</a>
+            <div>
+                <a href="pos.html" class="btn btn-warning me-2" title="Go to Point of Sale">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-cart-check-fill" viewBox="0 0 16 16">
+                        <path
+                            d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 4 0h3.5a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1.646-7.646-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708z" />
+                    </svg>
+                    POS
+                </a>
+                <span id="welcomeMessage" class="navbar-text text-white me-3"></span>
+                <button id="logoutButton" class="btn btn-danger" title="Logout from the application">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="sidebar">
+        <div class="p-3 text-center border-bottom">
+            <h5 class="mb-0">Navigation</h5>
+        </div>
+        <ul class="nav flex-column pt-2">
+            <li class="nav-item">
+                <a class="nav-link" href="dashboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#productSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="productSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <path d="M16 13H8"></path>
+                        <path d="M16 17H8"></path>
+                        <path d="M10 9H8"></path>
+                    </svg>
+                    Products
+                </a>
+                <div class="collapse" id="productSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="web.html">All Product</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="add-product.html">Add product</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="barcode_generator.html">Barcode Generator</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#purchaseSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="false" aria-controls="purchaseSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 10V7a5 5 0 0 1 10 0v3"></path>
+                        <path
+                            d="M17 10h-1a4 4 0 0 0-8 0H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Z">
+                        </path>
+                    </svg>
+                    Purchase
+                </a>
+                <div class="collapse" id="purchaseSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase.html">Add purchase</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-history.html">Purchase History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-return.html">Purchase Return</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-return-history.html">Purchase Return History</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#salesSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="salesSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                        <path d="M12 20v-8"></path>
+                        <path d="M12 4v8"></path>
+                        <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                    Sales
+                </a>
+                <div class="collapse" id="salesSubmenu">
+                    <ul class="nav flex-column ms-4">
+                       <li class="nav-item">
+                            <a class="nav-link sub-link" href="sales.html">Add Sales History</a>
+                        </li> 
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="pos-sales-history.html">POS Sales History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="add-sale.html">Add sale</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="sell-return.html">Sell Return</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="sell-return-history.html">Sell Return History</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="#peopleSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="true" aria-controls="peopleSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-users">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    People
+                </a>
+                <div class="collapse show" id="peopleSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link active" href="customer.html">Customer List</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="supplier.html">Supplier List</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#reportsSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="reportsSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-bar-chart-2">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    Reports
+                </a>
+                <div class="collapse" id="reportsSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="profit-and-loss.html">Profit &
+                                Loss</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-report.html">Stock Report</a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-adjust.html">Stock Adjust</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item" id="leaderboard-nav-item">
+                <a class="nav-link" href="leaderboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-award"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                    Leaderboard
+                </a>
+            </li>
+            <li class="nav-item" id="employee-nav-item" style="display: none;">
+                <a class="nav-link" href="employee.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Employee
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="account.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Account
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="container-fluid px-4">
+            <div
+                class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Customer List</h1>
+                <button id="addCustomerBtn" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-plus-lg me-2" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z" />
+                    </svg>
+                    Add Customer
+                </button>
+            </div>
+            <!-- Summary Cards -->
+            <div class="row mb-4">
+                <div class="col-md-4" id="perm-customer_total_customers">
+                    <div class="card shadow-sm h-100 border-start border-primary border-4">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-uppercase text-muted mb-1">Total Customers</h6>
+                                <p class="card-text fs-3 fw-bold mb-0" id="totalCustomersCard">0</p>
+                            </div>
+                            <div class="card-icon-container bg-primary-subtle">
+                                <i class="bi bi-people-fill fs-4 text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4" id="perm-customer_total_sales">
+                    <div class="card shadow-sm h-100 border-start border-success border-4">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-uppercase text-muted mb-1">Total Sales</h6>
+                                <p class="card-text fs-3 fw-bold mb-0" id="totalSalesCard">0.00 BDT</p>
+                            </div>
+                            <div class="card-icon-container bg-success-subtle">
+                                <i class="bi bi-cash-stack fs-4 text-success"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4" id="perm-customer_total_due">
+                    <div class="card shadow-sm h-100 border-start border-danger border-4">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="card-title text-uppercase text-muted mb-1">Total Due</h6>
+                                <p class="card-text fs-3 fw-bold mb-0" id="totalDueCard">0.00 BDT</p>
+                            </div>
+                            <div class="card-icon-container bg-danger-subtle">
+                                <i class="bi bi-cash-coin fs-4 text-danger"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-search" viewBox="0 0 16 16">
+                                <path
+                                    d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.098zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                            </svg>
+                        </span>
+                        <input type="search" id="customerSearchInput" class="form-control"
+                            placeholder="Search by ID, name, email, or phone...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">All Customers</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Customer ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Points</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customerTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+ <!-- Footer -->
+    <footer class="footer">
+      <div class="text-center">
+         <span class="text-muted">Made with care in <Strong>Bangladesh 🇧🇩 </Strong>| <strong> Devloped by</strong>: Indranil Saha | <strong> Version</strong>: 27.0.1 | <Strong>Powered by</Strong>: Google Firebase.</span>
+      </div>
+   </footer>
+    <!-- Modal -->
+    <div class="modal fade" id="customerDetailsModal" tabindex="-1" aria-labelledby="customerDetailsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customerDetailsModalLabel">Customer Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="customerDetailsContainer">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="customerModalLabel">Add New Customer</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="customerForm">
+                        <input type="hidden" id="customerId">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="customerFirstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="customerFirstName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="customerLastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="customerLastName">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="customerLanguage" class="form-label">Language</label>
+                                <input type="text" class="form-control" id="customerLanguage">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="customerDob" class="form-label">Date of Birth (Optional)</label>
+                                <input type="date" class="form-control" id="customerDob">
+                            </div>
+                            <div class="col-12">
+                                <label for="customerType" class="form-label">Customer Type</label>
+                                <select id="customerType" class="form-select">
+                                    <option value="shop_wholesale">Shop (Wholesale)</option>
+                                    <option value="shop_retail">Shop (Retail Sale)</option>
+                                    <option value="normal_wholesale">Normal Customer (Wholesale)</option>
+                                    <option value="normal_retail" selected>Normal Customer (Retail Sale)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="customerEmail" class="form-label">Email (Optional)</label>
+                                <input type="email" class="form-control" id="customerEmail">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="customerPhone" class="form-label">Phone</label>
+                                <input type="tel" class="form-control" id="customerPhone" required pattern="[0-9]+" title="Please enter numbers only">
+                            </div>
+                            <div class="col-12">
+                                <label for="customerPoints" class="form-label">Points</label>
+                                <input type="number" class="form-control" id="customerPoints" value="0" min="0"
+                                    required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" form="customerForm" class="btn btn-primary">Save Customer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="theme-switch-wrapper">
+        <button id="theme-switcher" aria-label="Toggle theme">
+            <span class="slider-thumb bg-secondary">
+                <svg class="sun" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                    fill="currentColor" viewBox="0 0 16 16">
+                    <path
+                        d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
+                </svg>
+                <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    viewBox="0 0 16 16">
+                    <path
+                        d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
+                </svg>
+            </span>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', async function () {
+
+            const { getFirestore, collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp, setDoc } = await import("https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js");
+            const { app } = await import('./firebase-init.js');
+            const customerTableBody = document.getElementById('customerTableBody');
+            const addCustomerBtn = document.getElementById('addCustomerBtn');
+            const customerModalEl = document.getElementById('customerModal');
+            const customerModal = new bootstrap.Modal(customerModalEl);
+            const customerForm = document.getElementById('customerForm');
+            const customerDetailsModalEl = document.getElementById('customerDetailsModal');
+            const customerDetailsModal = new bootstrap.Modal(customerDetailsModalEl);
+            const customerDetailsContainer = document.getElementById('customerDetailsContainer');
+            const customerIdInput = document.getElementById('customerId');
+            const searchInput = document.getElementById('customerSearchInput');
+            const logoutButton = document.getElementById('logoutButton');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+
+            let allCustomers = [];
+            let allSales = [];
+            let allSellReturns = [];
+            let currentUser = null;
+            const db = getFirestore(app);
+
+            function hasPermission(permission) {
+                if (!currentUser) return false;
+                if (currentUser.role === 'admin') return true;
+                return Array.isArray(currentUser.permissions) && currentUser.permissions.includes(permission);
+            }
+
+            function calculateAndDisplayTotals() {
+                document.getElementById('totalCustomersCard').textContent = allCustomers.length;
+
+                const verifiedCustomerSales = allSales.filter(sale => sale.customer && sale.customer.id);
+
+                const totalSales = verifiedCustomerSales.reduce((sum, sale) => sum + (sale.totalAmount || 0), 0);
+                document.getElementById('totalSalesCard').textContent = `${totalSales.toFixed(2)} BDT`;
+
+                const totalDue = verifiedCustomerSales.reduce((sum, sale) => sum + (sale.dueAmount || 0), 0);
+                document.getElementById('totalDueCard').textContent = `${totalDue.toFixed(2)} BDT`;
+            }
+
+            function updateNavigation() {
+                if (!currentUser) return;
+
+                function hasPermissionForNav(mainPerm, relatedPerms = []) {
+                    if (hasPermission(mainPerm)) return true;
+                    return relatedPerms.some(p => hasPermission(p));
+                }
+                const navItems = {
+                    'dashboard': { el: document.querySelector('a[href="dashboard.html"]')?.closest('.nav-item'), perm: 'dashboard' },
+                    'products': { el: document.querySelector('a[href="#productSubmenu"]')?.closest('.nav-item'), perm: 'products', related: ['all_product', 'add_product'] },
+                    'purchase': { el: document.querySelector('a[href="#purchaseSubmenu"]')?.closest('.nav-item'), perm: 'purchase', related: ['purchase_return', 'purchase_return_history'] },
+                    'sales': { el: document.querySelector('a[href="#salesSubmenu"]')?.closest('.nav-item'), perm: 'sales', related: ['add_sale', 'add_sale_record', 'pos_sale_history', 'sell_return', 'sell_return_history'] },
+                    'people': { el: document.querySelector('a[href="#peopleSubmenu"]')?.closest('.nav-item'), perm: 'people', related: ['customer', 'supplier'] },
+                    'employee': { el: document.getElementById('employee-nav-item'), perm: 'manage_employees' },
+                    'account': { el: document.querySelector('a[href="account.html"]')?.closest('.nav-item'), perm: null }, // Always visible
+                    'pos': { el: document.querySelector('a[href="pos.html"]'), perm: 'pos' }
+                };
+                for (const key in navItems) {
+                    const item = navItems[key];
+                    if (item.el) {
+                        if (currentUser.role === 'admin') {
+                            item.el.style.display = '';
+                        } else if (currentUser.role === 'employee') {
+                           
+                            item.el.style.display = (key === 'employee') ? 'none' : '';
+                        } else {
+                            
+                            if (item.perm === null || hasPermissionForNav(item.perm, item.related)) {
+                                item.el.style.display = '';
+                            } else {
+                                item.el.style.display = 'none';
+                            }
+                        }
+                    }
+                }
+            }
+            function renderCustomerRecords(customersToRender) {
+                customerTableBody.innerHTML = '';
+                if (customersToRender.length === 0) {
+                    customerTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No customers found.</td></tr>';
+                    return;
+                }
+                customersToRender.forEach(customer => {
+                    let actionsHtml = '';
+                    
+                    if (hasPermission('customer_details')) {
+                        actionsHtml += `<button class="btn btn-sm btn-success details-btn" data-id="${customer.firestoreId}" title="Details">Details</button>`;
+                    }
+                    
+                    if (hasPermission('customer_edit')) {
+                        actionsHtml += ` <button class="btn btn-sm btn-warning edit-btn ms-1" data-id="${customer.firestoreId}" title="Edit">Edit</button>`;
+                    }
+                    
+                    if (hasPermission('customer_delete')) {
+                        actionsHtml += ` <button class="btn btn-sm btn-danger delete-btn ms-1" data-id="${customer.firestoreId}" title="Delete">Delete</button>`;
+                    }
+
+                    const row = `
+                        <tr data-id="${customer.firestoreId}">
+                            <td>${customer.displayId || customer.firestoreId}</td>
+                            <td>${customer.name}</td>
+                            <td>${customer.email || 'N/A'}</td>
+                            <td>${customer.phone || 'N/A'}</td>
+                            <td>${customer.points || 0}</td>
+                            <td class="text-end">${actionsHtml}</td>
+                        </tr>
+                    `;
+                    customerTableBody.insertAdjacentHTML('beforeend', row);
+                });
+            }
+
+            function openCustomerModalForAdd() {
+                customerForm.reset();
+                customerIdInput.value = '';
+                document.getElementById('customerModalLabel').textContent = 'Add New Customer';
+                customerModal.show();
+            }
+
+            function openCustomerModal(customer) {
+                customerForm.reset();
+                document.getElementById('customerModalLabel').textContent = 'Edit Customer';
+                customerIdInput.value = customer.firestoreId;
+                document.getElementById('customerFirstName').value = customer.firstName || customer.name.split(' ')[0] || '';
+                document.getElementById('customerLastName').value = customer.lastName || customer.name.split(' ').slice(1).join(' ') || '';
+                document.getElementById('customerLanguage').value = customer.language || '';
+                document.getElementById('customerDob').value = customer.dob || '';
+                document.getElementById('customerType').value = customer.customerType || 'normal_retail';
+                document.getElementById('customerEmail').value = customer.email || '';
+                document.getElementById('customerPhone').value = customer.phone || '';
+                document.getElementById('customerPoints').value = customer.points || 0;
+                customerModal.show();
+            }
+
+            function filterAndRenderCustomers() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const filteredCustomers = allCustomers.filter(customer => {
+                    return (
+                        (customer.firestoreId && customer.firestoreId.toLowerCase().includes(searchTerm)) ||
+                        customer.name.toLowerCase().includes(searchTerm) ||
+                        (customer.email && customer.email.toLowerCase().includes(searchTerm)) ||
+                        (customer.phone && customer.phone.includes(searchTerm))
+                    );
+                });
+                renderCustomerRecords(filteredCustomers);
+            }
+            async function handleCustomerFormSubmit(e) {
+                e.preventDefault();
+
+                const customerId = customerIdInput.value;
+                const firstName = document.getElementById('customerFirstName').value.trim();
+                const lastName = document.getElementById('customerLastName').value.trim();
+                const email = document.getElementById('customerEmail').value.trim();
+                const phone = document.getElementById('customerPhone').value.trim();
+
+                // Validate mobile number (digits only)
+                if (!/^\d+$/.test(phone)) {
+                    alert("Mobile number must contain only numbers.");
+                    return;
+                }
+
+                // Check for duplicate phone or email
+                const duplicatePhone = allCustomers.find(c => c.phone === phone && c.firestoreId !== customerId);
+                if (duplicatePhone) {
+                    alert("A customer with this mobile number already exists.");
+                    return;
+                }
+
+                if (email) {
+                    const duplicateEmail = allCustomers.find(c => c.email === email && c.firestoreId !== customerId);
+                    if (duplicateEmail) {
+                        alert("A customer with this email already exists.");
+                        return;
+                    }
+                }
+
+                const customerData = {
+                    name: `${firstName} ${lastName}`.trim(),
+                    firstName: firstName,
+                    lastName: lastName,
+                    language: document.getElementById('customerLanguage').value.trim(),
+                    dob: document.getElementById('customerDob').value,
+                    customerType: document.getElementById('customerType').value,
+                    email: email,
+                    phone: phone, 
+                    points: parseInt(document.getElementById('customerPoints').value, 10) || 0,
+                    createdAt: serverTimestamp() // Use serverTimestamp for consistent sequential IDs
+
+                };
+
+                try {
+                    if (customerId) {
+                        const customerRef = doc(db, "customers", customerId);
+                        await updateDoc(customerRef, customerData);
+                        alert('Customer updated successfully!');
+                    } else {
+                        const customersSnapshot = await getDocs(collection(db, "customers"));
+                        const customerIds = customersSnapshot.docs
+                            .map(doc => doc.id)
+                            .filter(id => id.startsWith('C-'))
+                            .map(id => parseInt(id.split('-')[1], 10))
+                            .filter(num => !isNaN(num));
+                        const maxId = customerIds.length > 0 ? Math.max(...customerIds) : 0;
+                        const newCustomerId = `C-${maxId + 1}`;
+
+                        // The displayId can be the same as the document ID
+                        customerData.displayId = newCustomerId;
+
+                        const newCustomerRef = doc(db, "customers", newCustomerId);
+                        await setDoc(newCustomerRef, customerData);
+                        alert(`Customer added successfully with ID: ${newCustomerId}`);
+                    }
+                    await loadAndRenderCustomers();
+                    customerModal.hide();
+                } catch (error) {
+                    console.error("Error saving customer: ", error);
+                    alert("Failed to save customer. See console for details.");
+                }
+            }
+
+
+            async function handleRepayDues(customerId) {
+                const salesWithDue = allSales.filter(s => s.customer && s.customer.id === customerId && s.dueAmount > 0);
+
+                if (salesWithDue.length === 0) {
+                    alert("This customer has no outstanding dues.");
+                    return;
+                }
+
+                if (!confirm(`This will mark all ${salesWithDue.length} outstanding invoices as fully paid. Are you sure you want to proceed?`)) {
+                    return;
+                }
+
+                try {
+                    const batch = writeBatch(db);
+                    salesWithDue.forEach(sale => {
+                        const saleRef = doc(db, "sales", sale.firestoreId);
+                        batch.update(saleRef, { dueAmount: 0, paidAmount: sale.totalAmount, paymentStatus: 'Paid' });
+                    });
+                    await batch.commit();
+                    alert("All dues have been successfully marked as paid.");
+                    await loadAndRenderCustomers(); 
+                    customerDetailsModal.hide();
+                } catch (error) {
+                    console.error("Error repaying dues:", error);
+                    alert("An error occurred while repaying dues. Please check the console.");
+                }
+            }
+
+
+            async function handleTableActions(e) {
+                const target = e.target.closest('.details-btn, .edit-btn, .delete-btn');
+                if (!target) return;
+                const customerId = target.dataset.id;
+
+                if (target.classList.contains('details-btn') && hasPermission('customer_details')) {
+                    return showCustomerDetails(customerId);
+                }
+
+                if (target.classList.contains('edit-btn') && hasPermission('customer_edit')) {
+                    const customer = allCustomers.find(c => c.firestoreId === customerId);
+                    if (customer) {
+                        return openCustomerModal(customer);
+                    }
+                }
+
+                if (target.classList.contains('delete-btn') && hasPermission('customer_delete')) {
+                    const customer = allCustomers.find(c => c.firestoreId === customerId);
+                    if (customer && confirm(`Are you sure you want to delete "${customer.name}"?`)) {
+                        try {
+                            await deleteDoc(doc(db, "customers", customerId));
+                            alert('Customer deleted successfully.');
+                            await loadAndRenderCustomers(); 
+                        } catch (error) {
+                            console.error("Error deleting customer: ", error);
+                            alert("Failed to delete customer. See console for details.");
+                        }
+                    }
+                }
+            }
+            function calculateCustomerStats(customerId) {
+                const customerSales = allSales.filter(s => s.customer && s.customer.id === customerId);
+                const totalSaleValue = customerSales.reduce((sum, s) => sum + s.totalAmount, 0);
+                const lastSaleDate = customerSales.length > 0
+                    ? new Date(Math.max(...customerSales.map(s => s.date.getTime()))).toLocaleDateString()
+                    : 'N/A';
+                const totalDue = customerSales.reduce((sum, s) => sum + (s.dueAmount || 0), 0);
+                const customerSaleIds = new Set(customerSales.map(s => s.firestoreId));
+                const customerReturns = allSellReturns.filter(r => customerSaleIds.has(r.originalSaleId));
+                const totalReturnValue = customerReturns.reduce((sum, r) => sum + r.amountRefunded, 0);
+
+                return { totalSaleValue, lastSaleDate, totalDue, totalReturnValue };
+            }
+
+            function showCustomerDetails(customerId) {
+                const customer = allCustomers.find(c => c.firestoreId === customerId);
+                if (!customer) return;
+
+                const { totalSaleValue, lastSaleDate, totalDue, totalReturnValue } = calculateCustomerStats(customerId);
+
+                const detailsHtml = `
+                    <div class="row">
+                        <div class="col-lg-7">
+                            <h3>${customer.name}</h3>
+                            <p class="fs-5 text-muted">Customer ID: ${customer.displayId || 'N/A'}</p>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center ps-0"><span>First Name:</span> <strong>${customer.firstName || 'N/A'}</strong></li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center ps-0"><span>Last Name:</span> <strong>${customer.lastName || 'N/A'}</strong></li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center ps-0"><span>Language:</span> <strong>${customer.language || 'N/A'}</strong></li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center ps-0"><span>Date of Birth:</span> <strong>${customer.dob || 'N/A'}</strong></li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center ps-0"><span>Customer Type:</span> <strong>${customer.customerType || 'N/A'}</strong></li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center ps-0"><span>Phone:</span> <strong>${customer.phone || 'N/A'}</strong></li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center"><span>Email:</span> <strong>${customer.email || 'N/A'}</strong></li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center"><span>Loyalty Points:</span> <strong class="fs-5">${customer.points || 0}</strong></li>
+                            </ul>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="card text-bg-success mb-2"><div class="card-body text-center">
+                                <h6 class="card-title small text-uppercase">Total Spending</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">${totalSaleValue.toFixed(2)} BDT</p>
+                            </div></div>
+                            <div class="card text-bg-warning mb-2"><div class="card-body text-center">
+                                <h6 class="card-title small text-uppercase">Total Returns</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">${totalReturnValue.toFixed(2)} BDT</p>
+                            </div></div>
+                            <div class="card text-bg-danger mb-3"><div class="card-body text-center">
+                                <h6 class="card-title small text-uppercase">Total Due</h6>
+                                <p class="card-text fs-4 fw-bold mb-0">${totalDue.toFixed(2)} BDT</p>
+                            </div></div>
+                            ${totalDue > 0 ? `<button class="btn btn-danger w-100" id="repayDuesBtn" data-customer-id="${customerId}">Repay All Dues</button>` : ''}
+                            <p class="text-center text-muted small mt-2">Last Purchase: ${lastSaleDate}</p>
+                        </div>
+                    </div>`;
+                customerDetailsContainer.innerHTML = detailsHtml;
+                customerDetailsModal.show();
+            }
+
+            async function loadAndRenderCustomers() {
+                const querySnapshot = await getDocs(collection(db, "customers"));
+                const [salesSnapshot, returnsSnapshot] = await Promise.all([
+                    getDocs(collection(db, "sales")),
+                    getDocs(collection(db, "sellReturns"))
+                ]);
+
+                allSales = salesSnapshot.docs.map(doc => ({ firestoreId: doc.id, ...doc.data(), date: doc.data().date.toDate ? doc.data().date.toDate() : new Date() }));
+                allSellReturns = returnsSnapshot.docs.map(doc => ({ firestoreId: doc.id, ...doc.data() }));
+
+                allCustomers = querySnapshot.docs.map(doc => ({ firestoreId: doc.id, ...doc.data() }));
+                filterAndRenderCustomers();
+                calculateAndDisplayTotals();
+            }
+            function setupThemeSwitcher() {
+                const themeSwitcher = document.getElementById('theme-switcher');
+                const htmlEl = document.documentElement;
+
+                const applyTheme = (theme) => {
+                    htmlEl.setAttribute('data-bs-theme', theme);
+                };
+
+                const updateSwitcherUI = (theme) => {
+                    const thumb = themeSwitcher.querySelector('.slider-thumb');
+                    const sunIcon = themeSwitcher.querySelector('.sun');
+                    const moonIcon = themeSwitcher.querySelector('.moon');
+                    thumb.style.transform = theme === 'dark' ? 'translateX(30px)' : 'translateX(0px)';
+                    if (sunIcon) sunIcon.style.display = theme === 'dark' ? 'block' : 'none';
+                    if (moonIcon) moonIcon.style.display = theme === 'dark' ? 'none' : 'block';
+                };
+
+                const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                applyTheme(savedTheme);
+                updateSwitcherUI(savedTheme);
+
+                themeSwitcher.addEventListener('click', () => {
+                    const newTheme = htmlEl.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                    applyTheme(newTheme);
+                    updateSwitcherUI(newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            }
+            async function init() {
+                const sessionUserId = sessionStorage.getItem('loggedInUserId');
+                if (sessionUserId) {
+                    const userDocRef = doc(db, "users", sessionUserId);
+                    const userDocSnap = await getDoc(userDocRef);
+                    if (userDocSnap.exists()) {
+                        welcomeMessage.textContent = `Welcome, ${userDocSnap.data().name || userDocSnap.data().username}`;
+                        currentUser = { id: userDocSnap.id, ...userDocSnap.data() };
+                    } else {
+                        sessionStorage.clear();
+                        window.location.href = 'signin.html';
+                        return;
+                    }
+                }
+                if (!currentUser) {
+                    alert("Authentication error. Please sign in again.");
+                    window.location.href = 'signin.html';
+                    return;
+                }
+
+                updateNavigation();
+
+                if (!hasPermission('customer')) {
+                    alert('Access Denied. You do not have permission to view this page.');
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+
+                // Check permissions for summary cards
+                if (!hasPermission('customer_total_customers')) {
+                    document.getElementById('perm-customer_total_customers').style.display = 'none';
+                }
+                if (!hasPermission('customer_total_sales')) {
+                    document.getElementById('perm-customer_total_sales').style.display = 'none';
+                }
+                if (!hasPermission('customer_total_due')) {
+                    document.getElementById('perm-customer_total_due').style.display = 'none';
+                }
+
+                if (hasPermission('customer_add')) {
+                    addCustomerBtn.addEventListener('click', openCustomerModalForAdd);
+                } else {
+                    addCustomerBtn.style.display = 'none';
+                }
+                if (hasPermission('customer_add') || hasPermission('customer_edit')) {
+                    customerForm.addEventListener('submit', handleCustomerFormSubmit);
+                }
+
+                // Enforce numeric input for phone
+                document.getElementById('customerPhone').addEventListener('input', function (e) {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                });
+
+                customerTableBody.addEventListener('click', handleTableActions);
+                searchInput.addEventListener('input', filterAndRenderCustomers);
+                customerDetailsContainer.addEventListener('click', (e) => {
+                    if (e.target.id === 'repayDuesBtn') {
+                        handleRepayDues(e.target.dataset.customerId);
+                    }
+                });
+
+                logoutButton.addEventListener('click', () => {
+                    sessionStorage.clear();
+                    window.location.href = 'signin.html';
+                });
+
+                setupThemeSwitcher();
+
+                await loadAndRenderCustomers();
+            }
+
+
+            init();
+        });
+    </script>
+</body>
+
+</html>

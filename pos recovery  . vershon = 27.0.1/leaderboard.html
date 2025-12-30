@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard</title>
+    <link rel="icon" href="logo.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bs-primary-rgb: 99, 102, 241;
+            --bs-primary: #6366f1;
+            --bs-body-font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--bs-body-font-family);
+            background-color: var(--bs-tertiary-bg);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100%;
+            padding-top: 56px;
+
+            background-color: var(--bs-body-bg);
+            border-right: 1px solid var(--bs-border-color);
+            z-index: 1020;
+            overflow-y: auto;
+
+        }
+
+        .sidebar .nav-link {
+            color: var(--bs-body-color);
+            padding: .75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: var(--bs-tertiary-bg);
+        }
+
+        .sidebar .nav-link.active {
+            color: var(--bs-primary);
+            font-weight: 600;
+            border-left-color: var(--bs-primary);
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding-top: 72px;
+            flex-grow: 1;
+            padding-bottom: 40px;
+        }
+        
+        .theme-switch-wrapper {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 1001;
+        }
+
+        #theme-switcher {
+            background: none;
+            border: 1px solid var(--bs-border-color-translucent);
+            padding: 0;
+            cursor: pointer;
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: var(--bs-tertiary-bg);
+            border-radius: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer {
+            background-color: var(--bs-body-bg);
+            padding: 1rem;
+            border-top: 1px solid var(--bs-border-color);
+            margin-left: 240px;
+        }
+
+        [data-bs-theme="dark"] .footer {
+            background: linear-gradient(270deg, #1e1b4b 0%, #3730a3 100%);
+        }
+
+        [data-bs-theme="light"] .footer {
+            background: linear-gradient(270deg, #e0e7ff 0%, #eef2ff 100%);
+        }
+
+        .leaderboard-item .fw-bold {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .card-header {
+            font-weight: 600;
+        }
+        .rank-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 50%;
+            font-size: 1.2rem;
+        }
+        .rank-other { background-color: var(--bs-secondary-bg); color: var(--bs-body-color); font-size: 0.9rem; width: 28px; height: 28px; }
+        .list-group-item { transition: background-color 0.2s; }
+        .list-group-item:hover { background-color: var(--bs-tertiary-bg); }
+    </style>
+</head>
+
+<body>
+    <script>
+        if (sessionStorage.getItem('isAuthenticated') !== 'true') {
+            window.location.href = 'signin.html';
+        }
+    </script>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.html" style="margin-left: 240px;">Baroda Computers And sales</a>
+            <div>
+                <a href="pos.html" class="btn btn-warning me-2" title="Go to Point of Sale">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-cart-check-fill" viewBox="0 0 16 16">
+                        <path
+                            d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 4 0h3.5a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1.646-7.646-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708z" />
+                    </svg>
+                    POS
+                </a>
+                <span id="welcomeMessage" class="navbar-text text-white me-3"></span>
+                <button id="logoutButton" class="btn btn-danger" title="Logout from the application">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="sidebar">
+        <div class="p-3 text-center border-bottom">
+            <h5 class="mb-0">Navigation</h5>
+        </div>
+        <ul class="nav flex-column pt-2">
+            <li class="nav-item">
+                <a class="nav-link" href="dashboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                    </svg>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#productSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="productSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <path d="M16 13H8" />
+                        <path d="M16 17H8" />
+                        <path d="M10 9H8" />
+                    </svg>
+                    Products
+                </a>
+                <div class="collapse" id="productSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="web.html">All Product</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="add-product.html">Add product</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="barcode_generator.html">Barcode Generator</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#purchaseSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="false" aria-controls="purchaseSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 10V7a5 5 0 0 1 10 0v3" />
+                        <path
+                            d="M17 10h-1a4 4 0 0 0-8 0H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Z" />
+                    </svg>
+                    Purchase
+                </a>
+                <div class="collapse" id="purchaseSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase.html">Add purchase</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-history.html">Purchase History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-return.html">Purchase Return</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-return-history.html">Purchase Return History</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#salesSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="salesSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                        <path d="M12 20v-8" />
+                        <path d="M12 4v8" />
+                        <circle cx="12" cy="12" r="10" />
+                    </svg>
+                    Sales
+                </a>
+                <div class="collapse" id="salesSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="sales.html">Add Sales History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="pos-sales-history.html">POS Sales History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="add-sale.html">Add sale</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="sell-return.html">Sell Return</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="sell-return-history.html">Sell Return History</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#peopleSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="peopleSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    People
+                </a>
+                <div class="collapse" id="peopleSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="customer.html">Customer List</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="supplier.html">Supplier List</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#reportsSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="reportsSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-bar-chart-2">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    Reports
+                </a>
+                <div class="collapse" id="reportsSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="profit-and-loss.html">Profit &
+                                Loss</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-report.html">Stock Report</a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-adjust.html">Stock Adjust</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item" id="leaderboard-nav-item">
+                <a class="nav-link active" href="leaderboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-award"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                    Leaderboard
+                </a>
+            </li>
+            <li class="nav-item" id="employee-nav-item" style="display: none;">
+                <a class="nav-link" href="employee.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    Employee
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="account.html">
+
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    Account
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="container-fluid px-4">
+            <div
+                class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Leaderboard</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="input-group input-group-sm me-2">
+                        <span class="input-group-text">Start</span>
+                        <input type="date" class="form-control" id="startDate">
+                    </div>
+                    <div class="input-group input-group-sm me-2">
+                        <span class="input-group-text">End</span>
+                        <input type="date" class="form-control" id="endDate">
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary" id="applyDateFilter">Apply</button>
+                </div>
+            </div>
+            <div class="row">
+                <!-- Top Selling Products -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-header bg-transparent border-bottom-0 pt-3 pb-2">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="p-2 bg-primary-subtle rounded me-2 text-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16"><path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/></svg>
+                                    </div>
+                                    <h5 class="mb-0 fs-6 fw-bold">Top Products</h5>
+                                </div>
+                                <div class="btn-group btn-group-sm" role="group" id="product-period-toggle">
+                                    <input type="radio" class="btn-check" name="productPeriod" id="productMonth" autocomplete="off" checked>
+                                    <label class="btn btn-outline-primary" for="productMonth">Month</label>
+                                    <input type="radio" class="btn-check" name="productPeriod" id="productYear" autocomplete="off">
+                                    <label class="btn btn-outline-primary" for="productYear">Year</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush" id="topProductsList">
+                                <li class="list-group-item text-center text-muted py-4">Loading...</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Employees -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-header bg-transparent border-bottom-0 pt-3 pb-2">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="p-2 bg-success-subtle rounded me-2 text-success">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-badge" viewBox="0 0 16 16"><path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/><path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0h-7zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5v10.795a4.2 4.2 0 0 0-.776-.492C11.392 12.387 10.063 12 8 12s-3.392.387-4.224.803a4.2 4.2 0 0 0-.776.492V2.5z"/></svg>
+                                    </div>
+                                    <h5 class="mb-0 fs-6 fw-bold">Top Employees</h5>
+                                </div>
+                                <div class="btn-group btn-group-sm" role="group" id="employee-period-toggle">
+                                    <input type="radio" class="btn-check" name="employeePeriod" id="employeeMonth" autocomplete="off" checked>
+                                    <label class="btn btn-outline-primary" for="employeeMonth">Month</label>
+                                    <input type="radio" class="btn-check" name="employeePeriod" id="employeeYear" autocomplete="off">
+                                    <label class="btn btn-outline-primary" for="employeeYear">Year</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush" id="topEmployeesList">
+                                <li class="list-group-item text-center text-muted py-4">Loading...</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Customers -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-header bg-transparent border-bottom-0 pt-3 pb-2">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="p-2 bg-warning-subtle rounded me-2 text-warning-emphasis">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-people" viewBox="0 0 16 16"><path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8Zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022ZM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-3.04C6.217 9.849 6.4 9.66 6.6 9.5c.138-.112.28-.22.42-.32ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/></svg>
+                                    </div>
+                                    <h5 class="mb-0 fs-6 fw-bold">Top Customers</h5>
+                                </div>
+                                <div class="btn-group btn-group-sm" role="group" id="customer-period-toggle">
+                                    <input type="radio" class="btn-check" name="customerPeriod" id="customerMonth" autocomplete="off" checked>
+                                    <label class="btn btn-outline-primary" for="customerMonth">Month</label>
+                                    <input type="radio" class="btn-check" name="customerPeriod" id="customerYear" autocomplete="off">
+                                    <label class="btn btn-outline-primary" for="customerYear">Year</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush" id="topCustomersList">
+                                <li class="list-group-item text-center text-muted py-4">Loading...</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Suppliers -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-header bg-transparent border-bottom-0 pt-3 pb-2">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="p-2 bg-info-subtle rounded me-2 text-info-emphasis">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-truck" viewBox="0 0 16 16">
+                                            <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-4 0a1 1 0 0 1-1-1v-1h11V6.5h-1.44a1.5 1.5 0 0 1-1.32-.886L8.38 2.735A1.5 1.5 0 0 1 9.5 2h1.5a.5.5 0 0 1 0 1H9.5a.5.5 0 0 0-.39.188L7.15 5.03a.5.5 0 0 0 .41.82h3.44a.5.5 0 0 0 .41-.82L10.32 2.188A.5.5 0 0 0 9.5 2H1.5A.5.5 0 0 0 1 2.5v1zM12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-7 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+                                        </svg>
+                                    </div>
+                                    <h5 class="mb-0 fs-6 fw-bold">Top Suppliers</h5>
+                                </div>
+                                <div class="btn-group btn-group-sm" role="group" id="supplier-period-toggle">
+                                    <input type="radio" class="btn-check" name="supplierPeriod" id="supplierMonth" autocomplete="off" checked>
+                                    <label class="btn btn-outline-primary" for="supplierMonth">Month</label>
+
+                                    <input type="radio" class="btn-check" name="supplierPeriod" id="supplierYear" autocomplete="off">
+                                    <label class="btn btn-outline-primary" for="supplierYear">Year</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush" id="topSuppliersList">
+                                <li class="list-group-item text-center text-muted py-4">Loading...</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+ <!-- Footer -->
+    <footer class="footer">
+      <div class="text-center">
+         <span class="text-muted">Made with care in <Strong>Bangladesh 🇧🇩 </Strong>| <strong> Devloped by</strong>: Indranil Saha | <strong> Version</strong>: 27.0.1 | <Strong>Powered by</Strong>: Google Firebase.</span>
+      </div>
+   </footer>
+    <!-- Theme Switch -->
+    <div class="theme-switch-wrapper">
+        <button id="theme-switcher" aria-label="Toggle theme">
+            <span class="slider-thumb bg-secondary">
+                <svg class="sun" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                    fill="currentColor" viewBox="0 0 16 16">
+                    <path
+                        d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
+                </svg>
+                <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    viewBox="0 0 16 16">
+                    <path
+                        d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
+                </svg>
+            </span>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import { getFirestore, doc, getDoc, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+        import { app } from './firebase-init.js';
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            let currentUser = null;
+
+            function hasPermission(user, permission) {
+                if (!user) return false;
+                if (user.role === 'admin') return true;
+                return user.permissions && user.permissions.includes(permission);
+            }
+
+            function setupUI(user) {
+                function hasPermissionForNav(user, mainPerm, relatedPerms = []) {
+                    if (hasPermission(user, mainPerm)) return true;
+                    return relatedPerms.some(p => hasPermission(user, p));
+                }
+
+                const navItems = {
+                    'dashboard': { el: document.querySelector('a[href="dashboard.html"]')?.closest('.nav-item'), perm: 'dashboard' },
+                    'products': { el: document.querySelector('a[href="#productSubmenu"]')?.closest('.nav-item'), perm: 'products', related: ['all_product', 'add_product'] },
+                    'purchase': { el: document.querySelector('a[href="#purchaseSubmenu"]')?.closest('.nav-item'), perm: 'purchase', related: ['purchase_return', 'purchase_return_history'] },
+                    'sales': { el: document.querySelector('a[href="#salesSubmenu"]')?.closest('.nav-item'), perm: 'sales', related: ['add_sale', 'add_sale_record', 'pos_sale_history', 'sell_return', 'sell_return_history'] },
+                    'people': { el: document.querySelector('a[href="#peopleSubmenu"]')?.closest('.nav-item'), perm: 'people', related: ['customer', 'supplier'] },
+                    'leaderboard': { el: document.getElementById('leaderboard-nav-item'), perm: 'leaderboard' }, // Add leaderboard permission check
+                    'employee': { el: document.getElementById('employee-nav-item'), perm: 'manage_employees' },
+                    'account': { el: document.querySelector('a[href="account.html"]')?.closest('.nav-item'), perm: null },
+                    'pos': { el: document.querySelector('a[href="pos.html"]'), perm: 'pos' }
+                };
+
+                for (const key in navItems) {
+                    const item = navItems[key];
+                    if (item.el) {
+                        if (user.role === 'employee' && key === 'employee') {
+                            item.el.style.display = 'none';
+                        } else if (item.perm === null || hasPermissionForNav(user, item.perm, item.related || [])) {
+                            item.el.style.display = '';
+                        } else {
+                            item.el.style.display = 'none';
+                        }
+                    }
+                }
+            }
+
+            function setupEventListeners() {
+                document.getElementById('logoutButton').addEventListener('click', () => {
+                    sessionStorage.clear();
+                    signOut(auth).then(() => {
+                        window.location.href = 'signin.html';
+                    }).catch((error) => {
+                        console.error('Sign out error', error);
+                        window.location.href = 'signin.html';
+                    });
+                });
+
+                const themeSwitcher = document.getElementById('theme-switcher');
+                const htmlEl = document.documentElement;
+                const applyTheme = (theme) => {
+                    const effectiveTheme = theme || 'light';
+                    htmlEl.setAttribute('data-bs-theme', effectiveTheme);
+                    updateSwitcherUI(effectiveTheme);
+                };
+
+                function updateSwitcherUI(theme) {
+                    const thumb = themeSwitcher.querySelector('.slider-thumb');
+                    const sunIcon = themeSwitcher.querySelector('.sun');
+                    const moonIcon = themeSwitcher.querySelector('.moon');
+                    thumb.style.transform = theme === 'dark' ? 'translateX(30px)' : 'translateX(0px)';
+                    if (sunIcon) sunIcon.style.display = theme === 'dark' ? 'block' : 'none';
+                    if (moonIcon) moonIcon.style.display = theme === 'dark' ? 'none' : 'block';
+                }
+                applyTheme(currentUser.theme);
+                themeSwitcher.addEventListener('click', async () => {
+                    const newTheme = htmlEl.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                    applyTheme(newTheme);
+                    const userDocRef = doc(db, "users", currentUser.id);
+                    await updateDoc(userDocRef, { theme: newTheme });
+                    currentUser.theme = newTheme;
+                });
+            }
+
+            async function loadLeaderboards() {
+                // Fetch all necessary data in parallel
+                const [salesSnapshot, productsSnapshot, usersSnapshot, customersSnapshot, purchasesSnapshot, suppliersSnapshot] = await Promise.all([
+                    getDocs(collection(db, "sales")),
+                    getDocs(collection(db, "products")),
+                    getDocs(collection(db, "users")),
+                    getDocs(collection(db, "customers")),
+                    getDocs(collection(db, "purchases")),
+                    getDocs(collection(db, "suppliers"))
+                ]);
+
+                const allSales = salesSnapshot.docs.map(doc => doc.data());
+                const allProducts = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const allCustomers = customersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const allPurchases = purchasesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const allSuppliers = suppliersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // Global Date Filter
+                document.getElementById('applyDateFilter').addEventListener('click', () => {
+                    const startVal = document.getElementById('startDate').value;
+                    const endVal = document.getElementById('endDate').value;
+
+                    if (!startVal || !endVal) {
+                        alert("Please select both start and end dates.");
+                        return;
+                    }
+
+                    const startDate = new Date(startVal);
+                    startDate.setHours(0, 0, 0, 0);
+                    const endDate = new Date(endVal);
+                    endDate.setHours(23, 59, 59, 999);
+
+                    const filterByDate = (item) => {
+                        if (!item.date) return false;
+                        let itemDate;
+                        if (item.date.toDate) itemDate = item.date.toDate();
+                        else if (item.date.seconds) itemDate = new Date(item.date.seconds * 1000);
+                        else itemDate = new Date(item.date);
+                        return itemDate >= startDate && itemDate <= endDate;
+                    };
+
+                    const filteredSales = allSales.filter(filterByDate);
+                    const filteredPurchases = allPurchases.filter(filterByDate);
+
+                    renderLeaderboard('topProductsList', calculateTopProducts(filteredSales, allProducts), item => ({
+                        title: item.name,
+                        value: `${item.quantitySold} units`
+                    }));
+                    renderLeaderboard('topEmployeesList', calculateTopEmployees(filteredSales, allUsers), item => ({
+                        title: item.name,
+                        value: `${item.totalSales.toFixed(2)} BDT`
+                    }));
+                    renderLeaderboard('topCustomersList', calculateTopCustomers(filteredSales, allCustomers), item => ({
+                        title: item.name,
+                        value: `${item.totalSpending.toFixed(2)} BDT`
+                    }));
+                    renderLeaderboard('topSuppliersList', calculateTopSuppliers(filteredPurchases, allSuppliers), item => ({
+                        title: item.name,
+                        value: `${item.totalPurchase.toFixed(2)} BDT`
+                    }));
+
+                    // Reset radio buttons visually
+                    document.querySelectorAll('.btn-check').forEach(btn => btn.checked = false);
+                });
+
+                loadTopSellingProducts(allSales, allProducts);
+                loadTopEmployees(allSales, allUsers);
+                loadTopCustomers(allSales, allCustomers);
+                loadTopSuppliers(allPurchases, allSuppliers);
+            }
+            
+            function calculateTopProducts(sales, allProducts) {
+                const productSales = {};
+                sales.forEach(sale => {
+                    (sale.items || []).forEach(item => {
+                        const productId = item.firestoreId || item.productId;
+                        if (productId) {
+                            productSales[productId] = (productSales[productId] || 0) + (item.quantity || 0);
+                        }
+                    });
+                });
+
+                return Object.entries(productSales)
+                    .map(([productId, quantitySold]) => {
+                        const product = allProducts.find(p => p.id === productId);
+                        return {
+                            name: product ? product.name : 'Unknown Product',
+                            quantitySold
+                        };
+                    })
+                    .sort((a, b) => b.quantitySold - a.quantitySold)
+                    .slice(0, 5);
+            }
+
+            function calculateTopEmployees(sales, allUsers) {
+                const employeeSales = {};
+                sales.forEach(sale => {
+                    if (sale.soldBy && sale.soldBy.id) {
+                        employeeSales[sale.soldBy.id] = (employeeSales[sale.soldBy.id] || 0) + (sale.totalAmount || 0);
+                    }
+                });
+
+                return Object.entries(employeeSales)
+                    .map(([employeeId, totalSales]) => {
+                        const employee = allUsers.find(u => u.id === employeeId);
+                        return {
+                            name: employee ? employee.name : 'Unknown Employee',
+                            totalSales
+                        };
+                    })
+                    .sort((a, b) => b.totalSales - a.totalSales)
+                    .slice(0, 5);
+            }
+
+            function calculateTopCustomers(sales, allCustomers) {
+                const customerSales = {};
+                sales.forEach(sale => {
+                    if (sale.customer && sale.customer.id) {
+                        customerSales[sale.customer.id] = (customerSales[sale.customer.id] || 0) + (sale.totalAmount || 0);
+                    }
+                });
+
+                return Object.entries(customerSales)
+                    .map(([customerId, totalSpending]) => {
+                        const customer = allCustomers.find(c => c.id === customerId);
+                        return {
+                            name: customer ? customer.name : 'Unknown Customer',
+                            totalSpending
+                        };
+                    })
+                    .sort((a, b) => b.totalSpending - a.totalSpending)
+                    .slice(0, 5);
+            }
+
+            function calculateTopSuppliers(purchases, allSuppliers) {
+                const supplierPurchases = {};
+                purchases.forEach(purchase => {
+                    const supplierName = purchase.supplier; // This is shopName
+                    if (supplierName) {
+                        supplierPurchases[supplierName] = (supplierPurchases[supplierName] || 0) + (purchase.totalAmount || 0);
+                    }
+                });
+
+                return Object.entries(supplierPurchases)
+                    .map(([shopName, totalPurchase]) => ({
+                        name: shopName,
+                        totalPurchase
+                    }))
+                    .sort((a, b) => b.totalPurchase - a.totalPurchase)
+                    .slice(0, 5);
+            }
+
+            function loadTopSellingProducts(allSales, allProducts) {
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+
+                const monthlySales = allSales.filter(s => {
+                    if (!s.date || !s.date.seconds) return false;
+                    const saleDate = new Date(s.date.seconds * 1000);
+                    return saleDate.getMonth() === currentMonth && saleDate.getFullYear() === currentYear;
+                });
+
+                const yearlySales = allSales.filter(s => {
+                    if (!s.date || !s.date.seconds) return false;
+                    const saleDate = new Date(s.date.seconds * 1000);
+                    return saleDate.getFullYear() === currentYear;
+                });
+
+                const topMonthlyProducts = calculateTopProducts(monthlySales, allProducts);
+                const topYearlyProducts = calculateTopProducts(yearlySales, allProducts);
+
+                function render(products) {
+                    renderLeaderboard('topProductsList', products, item => ({
+                        title: item.name,
+                        value: `${item.quantitySold} units`
+                    }));
+                }
+
+                render(topMonthlyProducts); // Initial render
+                document.getElementById('productMonth').addEventListener('change', () => render(topMonthlyProducts));
+                document.getElementById('productYear').addEventListener('change', () => render(topYearlyProducts));
+            }
+
+            function loadTopEmployees(allSales, allUsers) {
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+
+                const monthlySales = allSales.filter(s => {
+                    if (!s.date || !s.date.seconds) return false;
+                    const saleDate = new Date(s.date.seconds * 1000);
+                    return saleDate.getMonth() === currentMonth && saleDate.getFullYear() === currentYear;
+                });
+
+                const yearlySales = allSales.filter(s => {
+                    if (!s.date || !s.date.seconds) return false;
+                    const saleDate = new Date(s.date.seconds * 1000);
+                    return saleDate.getFullYear() === currentYear;
+                });
+
+                const topMonthlyEmployees = calculateTopEmployees(monthlySales, allUsers);
+                const topYearlyEmployees = calculateTopEmployees(yearlySales, allUsers);
+
+                function render(employees) {
+                    renderLeaderboard('topEmployeesList', employees, item => ({
+                        title: item.name,
+                        value: `${item.totalSales.toFixed(2)} BDT`
+                    }));
+                }
+
+                render(topMonthlyEmployees); // Initial render
+                document.getElementById('employeeMonth').addEventListener('change', () => render(topMonthlyEmployees));
+                document.getElementById('employeeYear').addEventListener('change', () => render(topYearlyEmployees));
+            }
+
+            function loadTopCustomers(allSales, allCustomers) {
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+
+                const monthlySales = allSales.filter(s => {
+                    if (!s.date || !s.date.seconds) return false;
+                    const saleDate = new Date(s.date.seconds * 1000);
+                    return saleDate.getMonth() === currentMonth && saleDate.getFullYear() === currentYear;
+                });
+
+                const yearlySales = allSales.filter(s => {
+                    if (!s.date || !s.date.seconds) return false;
+                    const saleDate = new Date(s.date.seconds * 1000);
+                    return saleDate.getFullYear() === currentYear;
+                });
+
+                const topMonthlyCustomers = calculateTopCustomers(monthlySales, allCustomers);
+                const topYearlyCustomers = calculateTopCustomers(yearlySales, allCustomers);
+
+                function render(customers) {
+                    renderLeaderboard('topCustomersList', customers, item => ({
+                        title: item.name,
+                        value: `${item.totalSpending.toFixed(2)} BDT`
+                    }));
+                }
+
+                render(topMonthlyCustomers); // Initial render
+                document.getElementById('customerMonth').addEventListener('change', () => render(topMonthlyCustomers));
+                document.getElementById('customerYear').addEventListener('change', () => render(topYearlyCustomers));
+            }
+
+            function loadTopSuppliers(allPurchases, allSuppliers) {
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+
+                const monthlyPurchases = allPurchases.filter(p => {
+                    if (!p.date || !p.date.toDate) return false;
+                    const purchaseDate = p.date.toDate();
+                    return purchaseDate.getMonth() === currentMonth && purchaseDate.getFullYear() === currentYear;
+                });
+
+                const yearlyPurchases = allPurchases.filter(p => {
+                    if (!p.date || !p.date.toDate) return false;
+                    const purchaseDate = p.date.toDate();
+                    return purchaseDate.getFullYear() === currentYear;
+                });
+
+                const topMonthlySuppliers = calculateTopSuppliers(monthlyPurchases, allSuppliers);
+                const topYearlySuppliers = calculateTopSuppliers(yearlyPurchases, allSuppliers);
+
+                function render(suppliers) {
+                    renderLeaderboard('topSuppliersList', suppliers, item => ({ title: item.name, value: `${item.totalPurchase.toFixed(2)} BDT` }));
+                }
+
+                render(topMonthlySuppliers); // Initial render
+                document.getElementById('supplierMonth').addEventListener('change', () => render(topMonthlySuppliers));
+                document.getElementById('supplierYear').addEventListener('change', () => render(topYearlySuppliers));
+            }
+
+            function renderLeaderboard(elementId, data, formatter) {
+                const listElement = document.getElementById(elementId);
+                listElement.innerHTML = ''; // Clear loading state
+
+                if (data.length === 0) {
+                    listElement.innerHTML = '<li class="list-group-item text-center text-muted py-4">No data available.</li>';
+                    return;
+                }
+
+                data.forEach((item, index) => {
+                    const { title, value } = formatter(item);
+                    const rank = index + 1;
+                    let rankContent = `<span class="rank-other rounded-circle d-flex align-items-center justify-content-center">${rank}</span>`;
+                    
+                    if (rank === 1) rankContent = '<span class="rank-icon">🥇</span>';
+                    else if (rank === 2) rankContent = '<span class="rank-icon">🥈</span>';
+                    else if (rank === 3) rankContent = '<span class="rank-icon">🥉</span>';
+
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item d-flex align-items-center justify-content-between py-3';
+                    li.innerHTML = `
+                        <div class="d-flex align-items-center overflow-hidden me-3">
+                            <div class="me-3" style="min-width: 32px; text-align: center;">${rankContent}</div>
+                            <div class="fw-bold text-truncate" title="${title}">${title}</div>
+                        </div>
+                        <span class="badge bg-primary-subtle text-primary-emphasis rounded-pill px-3">${value}</span>
+                    `;
+                    listElement.appendChild(li);
+                });
+            }
+
+            async function initializeApp() {
+                const sessionUserId = sessionStorage.getItem('loggedInUserId');
+                if (sessionUserId) {
+                    const userDocRef = doc(db, "users", sessionUserId);
+                    const userDocSnap = await getDoc(userDocRef);
+                    if (userDocSnap.exists()) {
+                        currentUser = { id: userDocSnap.id, ...userDocSnap.data() };
+                        document.getElementById('welcomeMessage').textContent = `Welcome, ${currentUser.name.split(' ')[0]}`;
+                        setupUI(currentUser);
+                        setupEventListeners();
+                        loadLeaderboards();
+                    } else {
+                        sessionStorage.clear();
+                        window.location.href = 'signin.html';
+                    }
+                } else {
+                    window.location.href = 'signin.html';
+                }
+            }
+
+            initializeApp();
+        });
+    </script>
+    <script type="module" src="firebase-init.js"></script>
+</body>
+</html>
