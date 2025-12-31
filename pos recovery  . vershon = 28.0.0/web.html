@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Products</title>
+    <link rel="icon" href="logo.png" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bs-primary-rgb: 99, 102, 241;
+            --bs-primary: #6366f1;
+            --bs-body-font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--bs-body-font-family);
+            background-color: var(--bs-tertiary-bg);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100%;
+            padding-top: 56px;
+            background-color: var(--bs-body-bg);
+            border-right: 1px solid var(--bs-border-color);
+            z-index: 1020;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            color: var(--bs-body-color);
+            padding: .75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: var(--bs-tertiary-bg);
+        }
+
+        .sidebar .nav-link.active {
+            color: var(--bs-primary);
+            font-weight: 600;
+            border-left-color: var(--bs-primary);
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding-top: 72px;
+            flex-grow: 1;
+            padding-bottom: 40px;
+        }
+
+        .product-card {
+            border: none;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-card img {
+            height: 200px;
+            object-fit: contain;
+            background-color: #ffffff;
+        }
+
+        [data-bs-theme="dark"] .product-card img {
+            background-color: var(--bs-gray-200);
+        }
+
+        .product-card .card-body {
+            position: relative;
+            padding: 1.5rem;
+        }
+
+        .card-actions {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .product-card:hover .card-actions {
+            opacity: 1;
+        }
+
+        .card-actions .btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .list-group-item {
+            background-color: transparent !important;
+            border-color: var(--bs-border-color-translucent) !important;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        /* Theme Switcher */
+        .theme-switch-wrapper {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 1001;
+        }
+
+        #theme-switcher {
+            background: none;
+            border: 1px solid var(--bs-border-color-translucent);
+            padding: 0;
+            cursor: pointer;
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: var(--bs-tertiary-bg);
+            border-radius: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer {
+            background-color: var(--bs-body-bg);
+            padding: 1rem;
+            border-top: 1px solid var(--bs-border-color);
+            margin-left: 240px;
+        }
+
+        [data-bs-theme="dark"] .footer {
+            background: linear-gradient(270deg, #1e1b4b 0%, #3730a3 100%);
+        }
+
+        [data-bs-theme="light"] .footer {
+            background: linear-gradient(270deg, #e0e7ff 0%, #eef2ff 100%);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.html" style="margin-left: 240px;">Baroda Computure And Sales</a>
+            <div>
+                <a href="pos.html" class="btn btn-warning me-2" title="Go to Point of Sale">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-cart-check-fill" viewBox="0 0 16 16">
+                        <path
+                            d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 4 0h3.5a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1.646-7.646-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708z" />
+                    </svg>
+                    POS
+                </a>
+                <span id="welcomeMessage" class="navbar-text text-white me-3"></span>
+                <button id="logoutButton" class="btn btn-danger" title="Logout from the application">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="sidebar">
+        <div class="p-3 text-center border-bottom">
+            <h5 class="mb-0">Navigation</h5>
+        </div>
+        <ul class="nav flex-column pt-2">
+            <li class="nav-item">
+                <a class="nav-link" href="dashboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="#productSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="true" aria-controls="productSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <path d="M16 13H8"></path>
+                        <path d="M16 17H8"></path>
+                        <path d="M10 9H8"></path>
+                    </svg>
+                    Products
+                </a>
+                <div class="collapse show" id="productSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link active" href="web.html">All Product</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="add-product.html">Add product</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="barcode_generator.html">Barcode Generator</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#purchaseSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="false" aria-controls="purchaseSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 10V7a5 5 0 0 1 10 0v3"></path>
+                        <path
+                            d="M17 10h-1a4 4 0 0 0-8 0H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Z">
+                        </path>
+                    </svg>
+                    Purchase
+                </a>
+                <div class="collapse" id="purchaseSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase.html">Add purchase</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-history.html">Purchase History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-return.html">Purchase Return</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-return-history.html">Purchase Return History</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#salesSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="salesSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                        <path d="M12 20v-8"></path>
+                        <path d="M12 4v8"></path>
+                        <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                    Sales
+                </a>
+                <div class="collapse" id="salesSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="sales.html">Add Sales History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="pos-sales-history.html">POS Sales History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="add-sale.html">Add sale</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="sell-return.html">Sell Return</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="sell-return-history.html">Sell Return History</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#peopleSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="peopleSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-users">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    People
+                </a>
+                <div class="collapse" id="peopleSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="customer.html">Customer List</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="supplier.html">Supplier List</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#reportsSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="reportsSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-bar-chart-2">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    Reports
+                </a>
+                <div class="collapse" id="reportsSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="profit-and-loss.html">Profit &
+                                Loss</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-report.html">Stock Report</a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-adjust.html">Stock Adjust</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item" id="leaderboard-nav-item">
+                <a class="nav-link" href="leaderboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-award"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                    Leaderboard
+                </a>
+            </li>
+            <li class="nav-item" id="employee-nav-item" style="display: none;">
+                <a class="nav-link" href="employee.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Employee
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="account.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Account
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="container-fluid px-4">
+            <!-- Header Section -->
+            <div
+                class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+                <h1 class="h2">Product List</h1>
+            </div>
+
+            <!-- Search Bar Section -->
+            <div class="row mb-4">
+                <div class="col-lg-10 offset-lg-1">
+                    <div class="input-group input-group-lg">
+                        <select id="sortBy" class="form-select" style="max-width: 220px;">
+                            <option value="name-asc" selected>Sort by Name (A-Z)</option>
+                            <option value="name-desc">Sort by Name (Z-A)</option>
+                            <option value="price-asc">Sell Price (Low-High)</option>
+                            <option value="price-desc">Sell Price (High-Low)</option>
+                            <option value="qty-asc">Quantity (Low-High)</option>
+                            <option value="qty-desc">Quantity (High-Low)</option>
+                            <option value="stock-status-desc">In Stock to Out of Stock</option>
+                            <option value="stock-status-asc">Out of Stock to In Stock</option>
+                        </select>
+                        <input type="search" id="productSearch" class="form-control"
+                            placeholder="Search by name, barcode, or category...">
+                    </div>
+                </div>
+            </div>
+            <div class="row" id="productList">
+                <!-- Product cards will be inserted here by JavaScript -->
+            </div>
+
+            <div id="noProductsMessage" class="text-center py-5" style="display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor"
+                    class="bi bi-box-seam text-muted" viewBox="0 0 16 16">
+                    <path
+                        d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z" />
+                </svg>
+                <h2 class="mt-3">No Products Found</h2>
+                <p class="lead text-muted">Click "Add Product" on the Navigation to get started.</p>
+            </div>
+        </div>
+    </main>
+
+ <!-- Footer -->
+    <footer class="footer">
+      <div class="text-center">
+         <span class="text-muted">Made with care in <Strong>Bangladesh 🇧🇩 </Strong>| <strong> Devloped by</strong>: Indranil Saha | <strong> Version</strong>: 28.0.0 | <Strong>Powered by</Strong>: Google Firebase.</span>
+      </div>
+   </footer>
+
+    <!-- Product Details Modal -->
+    <div class="modal fade" id="productDetailsModal" tabindex="-1" aria-labelledby="productDetailsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productDetailsModalLabel">Product Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="productDetailsContainer">
+                        <!-- Details will be injected here by JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Switcher -->
+    <div class="theme-switch-wrapper">
+        <button id="theme-switcher" aria-label="Toggle theme">
+            <span class="slider-thumb bg-secondary">
+                <svg class="sun" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                    fill="currentColor" viewBox="0 0 16 16">
+                    <path
+                        d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
+                </svg>
+                <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    viewBox="0 0 16 16">
+                    <path
+                        d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
+                </svg>
+            </span>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Redirect to sign-in if not authenticated
+            if (sessionStorage.getItem('isAuthenticated') !== 'true') {
+                window.location.href = 'signin.html';
+            }
+
+            // --- DOM Elements ---
+            const productListContainer = document.getElementById('productList');
+            const noProductsMessage = document.getElementById('noProductsMessage');
+            const searchInput = document.getElementById('productSearch');
+            const logoutButton = document.getElementById('logoutButton');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            const sortBySelect = document.getElementById('sortBy');
+            const employeeNavItem = document.getElementById('employee-nav-item');
+
+            // --- Data Stores & State ---
+            let allProducts = [];
+            let allPurchases = [];
+            let currentUser = null;
+            let db; // Firestore instance
+
+            function hasPermission(user, permission) {
+                if (!user) return false;
+                if (user.role === 'admin') return true;
+                return user.permissions && user.permissions.includes(permission);
+            }
+
+            // --- Product Management Functions ---
+            async function loadProductsFromFirestore() {
+                const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js");
+                const querySnapshot = await getDocs(collection(db, "products"));
+                allProducts = querySnapshot.docs.map(doc => ({ firestoreId: doc.id, ...doc.data() }));
+            }
+
+            function renderProducts(productsToRender) {
+                productListContainer.innerHTML = '';
+                noProductsMessage.style.display = productsToRender.length === 0 ? 'block' : 'none';
+
+                productsToRender.forEach(product => {
+                    let pricingListHtml = '';
+                    const productId = product.firestoreId; // Use Firestore ID
+
+                    if (product.priceTiers && product.priceTiers.pcs) {
+                        pricingListHtml = `
+                            <li class="list-group-item d-flex justify-content-between pt-3"><span>Buy Price (Pcs):</span> <strong>${(product.priceTiers.pcs.buy || 0).toFixed(2)}</strong></li>
+                            <li class="list-group-item d-flex justify-content-between"><span>Wholesale (Pcs):</span> <strong>${(product.priceTiers.pcs.wholesale || 0).toFixed(2)}</strong></li>
+                            <li class="list-group-item d-flex justify-content-between"><span>Sell Price (Pcs):</span> <strong>${(product.priceTiers.pcs.sell || 0).toFixed(2)}</strong></li>`;
+                    } else {
+                        pricingListHtml = `
+                            <li class="list-group-item d-flex justify-content-between pt-3"><span>Buy Price:</span> <strong>${(product.buyPrice || 0).toFixed(2)}</strong></li>
+                            <li class="list-group-item d-flex justify-content-between"><span>Wholesale Price:</span> <strong>${(product.wholesalePrice || 0).toFixed(2)}</strong></li>
+                            <li class="list-group-item d-flex justify-content-between"><span>Sell Price:</span> <strong>${(product.sellPrice || 0).toFixed(2)}</strong></li>`;
+                    }
+                    const detailsButtonHtml = hasPermission(currentUser, 'all_product_details') ? `
+                        <button class="btn btn-sm btn-success details-btn" data-id="${productId}" title="View Details">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
+                        </button>` : '';
+
+                    const editButtonHtml = hasPermission(currentUser, 'all_product_edit') ? `
+                        <button class="btn btn-sm btn-warning edit-btn" data-id="${productId}" title="Edit Product">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zM13.75 3.5l-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/></svg>
+                        </button>` : '';
+
+                    const deleteButtonHtml = hasPermission(currentUser, 'all_product_delete') ? `
+                        <button class="btn btn-sm btn-danger delete-btn" data-id="${productId}" title="Delete Product">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16"><path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5zM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528zM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5z"/></svg>
+                        </button>` : '';
+
+                    let quantityDisplay = `${product.quantity || 0} ${product.unit || 'Pcs'}`;
+                    if (product.unit === 'Box' && product.packetPerBox && product.pcsPerBox) {
+                        const totalPcs = (product.quantity || 0) * (product.packetPerBox || 1) * (product.pcsPerBox || 1);
+                        quantityDisplay = `${totalPcs} Pcs (${product.quantity || 0} Box)`;
+                    }
+
+                    const card = `
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card product-card rounded-lg shadow-sm h-100">
+                                <img src="${product.imageUrl || 'https://kpfinder.com/assets/default_product.jpg'}" class="card-img-top rounded-top" alt="${product.name}">
+                                <div class="card-body d-flex flex-column">
+                                    <div class="card-actions">
+                                        ${detailsButtonHtml}
+                                        ${editButtonHtml}
+                                        ${deleteButtonHtml}
+                                    </div>
+                                    <h5 class="card-title fw-bold">${product.name}</h5>
+                                    <p class="card-text text-muted small">${product.brand || 'No Brand'}</p>
+                                    <ul class="list-group list-group-flush mt-auto">
+                                        <li class="list-group-item d-flex justify-content-between"><span>Barcode:</span> <strong>${product.barcode || 'N/A'}</strong></li>
+                                        <li class="list-group-item d-flex justify-content-between"><span>Quantity:</span> <strong>${quantityDisplay}</strong></li>
+                                        ${pricingListHtml}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>`;
+                    productListContainer.insertAdjacentHTML('beforeend', card);
+                });
+            }
+
+            function showProductDetails(productId) {
+                const productDetailsModalEl = document.getElementById('productDetailsModal');
+                const productDetailsModal = new bootstrap.Modal(productDetailsModalEl);
+                const product = allProducts.find(p => p.firestoreId === productId);
+                if (!product) return;
+
+                // --- Fetch and build purchase history ---
+                const productPurchaseHistory = [];
+                allPurchases.forEach(purchase => {
+                    const itemsInPurchase = Array.isArray(purchase.items) ? purchase.items : [];
+                    itemsInPurchase.forEach(relevantItem => {
+                        if (relevantItem.productId === product.firestoreId) {
+                            productPurchaseHistory.push({
+                                date: purchase.date,
+                                supplier: purchase.supplier || 'N/A',
+                                quantity: relevantItem.quantity,
+                                cost: relevantItem.cost
+                            });
+                        }
+                    });
+                });
+
+                const purchaseHistoryHtml = productPurchaseHistory.length > 0 ? `
+                    <h5 class="mt-4">Purchase History</h5>
+                    <div class="table-responsive" style="max-height: 200px;">
+                        <table class="table table-sm table-striped">
+                            <thead><tr><th>Date</th><th>Supplier</th><th class="text-center">Qty</th><th class="text-end">Cost/Unit</th></tr></thead>
+                            <tbody>${productPurchaseHistory.map(rec => `<tr><td>${new Date(rec.date.seconds * 1000).toLocaleDateString()}</td><td>${rec.supplier}</td><td class="text-center">${rec.quantity}</td><td class="text-end">${rec.cost.toFixed(2)}</td></tr>`).join('')}</tbody>
+                        </table>
+                    </div>` : '<p class="text-center text-muted mt-4">No purchase history found for this product.</p>';
+
+                let pricingHtml = '';
+                const lotInfoHtml = product.lots && product.lots.length > 0 ? `
+                    <h5 class="mt-4">Lot Information</h5>
+                    <div class="table-responsive" style="max-height: 200px;">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Lot #</th>
+                                    <th class="text-center">Quantity</th>
+                                    <th class="text-end">Buy Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>${product.lots.map(lot => `<tr><td>${lot.lotNumber}</td><td class="text-center">${lot.quantity}</td><td class="text-end">${(lot.buyPrice || 0).toFixed(2)}</td></tr>`).join('')}</tbody>
+                        </table>
+                    </div>` : '';
+                if (product.priceTiers) {
+                    pricingHtml = '<h5 class="mt-4">Pricing Details</h5><div class="row g-3">';
+                    
+                    const generatePricingCard = (unitLabel, tierData) => {
+                        if (!tierData) return '';
+                        return `
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header py-1 small fw-bold text-uppercase bg-light-subtle">${unitLabel}</div>
+                                    <div class="card-body p-2">
+                                        <div class="d-flex justify-content-center mb-2 pb-2 border-bottom">
+                                            <span class="badge bg-secondary">Buy Price: ${(tierData.buy || 0).toFixed(2)}</span>
+                                        </div>
+                                        <div class="row text-center">
+                                            <div class="col-6 border-end">
+                                                <div class="text-primary small fw-bold mb-1">Normal Customer</div>
+                                                <div class="d-flex justify-content-between px-3">
+                                                    <span class="small text-muted">Wholesale:</span>
+                                                    <span class="small fw-bold">${(tierData.wholesale || 0).toFixed(2)}</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between px-3">
+                                                    <span class="small text-muted">Retail:</span>
+                                                    <span class="small fw-bold">${(tierData.sell || 0).toFixed(2)}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-warning-emphasis small fw-bold mb-1">Shop Customer</div>
+                                                <div class="d-flex justify-content-between px-3">
+                                                    <span class="small text-muted">Wholesale:</span>
+                                                    <span class="small fw-bold">${(tierData.shop_wholesale || 0).toFixed(2)}</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between px-3">
+                                                    <span class="small text-muted">Retail:</span>
+                                                    <span class="small fw-bold">${(tierData.shop_sell || 0).toFixed(2)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`;
+                    };
+
+                    const units = ['box', 'pack', 'pcs', 'kg', 'gram', 'liter', 'ml'];
+                    units.forEach(unit => {
+                        if (product.priceTiers[unit]) {
+                            pricingHtml += generatePricingCard(unit, product.priceTiers[unit]);
+                        }
+                    });
+                    
+                    pricingHtml += '</div>';
+                } else {
+                    pricingHtml = `
+                        <h5 class="mt-4">Pricing</h5>
+                        <div class="row text-center">
+                            <div class="col-4"><div class="p-2 bg-danger-subtle text-danger-emphasis rounded"><h6>Buy Price</h6><p class="fs-4 mb-0">${(product.buyPrice || 0).toFixed(2)}</p></div></div>
+                            <div class="col-4"><div class="p-2 bg-primary-subtle text-primary-emphasis rounded"><h6>Wholesale Price</h6><p class="fs-4 mb-0">${(product.wholesalePrice || 0).toFixed(2)}</p></div></div>
+                            <div class="col-4"><div class="p-2 bg-success-subtle text-success-emphasis rounded"><h6>Sell Price</h6><p class="fs-4 mb-0">${(product.sellPrice || 0).toFixed(2)}</p></div></div>
+                        </div>`;
+                }
+
+                const detailsHtml = `
+                    <div class="row">
+                        <div class="col-md-4 text-center"> <img src="${product.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image'}" class="img-fluid rounded mb-3" alt="${product.name}"> </div>
+                        <div class="col-md-8">
+                            <h3>${product.name}</h3>
+                            <p class="text-muted">${product.description || 'No description available.'}</p>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between"><span>Category:</span> <strong>${product.category || 'N/A'}</strong></li>
+                                <li class="list-group-item d-flex justify-content-between"><span>Brand:</span> <strong>${product.brand || 'N/A'}</strong></li>
+                                <li class="list-group-item d-flex justify-content-between"><span>Barcode:</span> <strong>${product.barcode || 'N/A'}</strong></li>
+                                <li class="list-group-item d-flex justify-content-between"><span>Unit:</span> <strong>${product.unit || 'N/A'}</strong></li>
+                                <li class="list-group-item d-flex justify-content-between"><span>Current Quantity:</span> <strong>${product.quantity || 0}</strong></li>
+                                <li class="list-group-item d-flex justify-content-between"><span>Alert Quantity:</span> <strong>${product.alertQuantity || 0}</strong></li>
+                                ${product.packetPerBox ? `<li class="list-group-item d-flex justify-content-between"><span>Packet / Box:</span> <strong>${product.packetPerBox}</strong></li>` : ''}
+                                ${product.pcsPerBox ? `<li class="list-group-item d-flex justify-content-between"><span>PCS / Packet:</span> <strong>${product.pcsPerBox}</strong></li>` : ''}
+                            </ul>
+                        </div>
+                    </div>
+                    <hr>
+                    ${pricingHtml}
+                    ${lotInfoHtml}
+                    ${purchaseHistoryHtml}
+                `;
+
+                document.getElementById('productDetailsContainer').innerHTML = detailsHtml;
+                productDetailsModal.show();
+            }
+
+            function filterAndSortProducts() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const sortBy = sortBySelect.value;
+
+                let filteredProducts = allProducts.filter(product =>
+                    product.name.toLowerCase().includes(searchTerm) ||
+                    (product.barcode && String(product.barcode).toLowerCase().includes(searchTerm)) ||
+                    (product.category && product.category.toLowerCase().includes(searchTerm))
+                );
+
+                filteredProducts.sort((a, b) => {
+                    switch (sortBy) {
+                        case 'name-asc':
+                            return a.name.localeCompare(b.name);
+                        case 'name-desc':
+                            return b.name.localeCompare(a.name);
+                        case 'price-asc':
+                            return (a.sellPrice || 0) - (b.sellPrice || 0);
+                        case 'price-desc':
+                            return (b.sellPrice || 0) - (a.sellPrice || 0);
+                        case 'qty-asc':
+                            return (a.quantity || 0) - (b.quantity || 0);
+                        case 'qty-desc':
+                            return (b.quantity || 0) - (a.quantity || 0);
+                        case 'stock-status-desc':
+                            return ((b.quantity || 0) > 0 ? 1 : 0) - ((a.quantity || 0) > 0 ? 1 : 0);
+                        case 'stock-status-asc':
+                            return ((a.quantity || 0) > 0 ? 1 : 0) - ((b.quantity || 0) > 0 ? 1 : 0);
+                        default:
+                            return 0;
+                    }
+                });
+
+                renderProducts(filteredProducts);
+            }
+
+            // --- Event Handlers ---
+            async function setupEventListeners() {
+                logoutButton.addEventListener('click', () => {
+                    sessionStorage.clear();
+                    window.location.href = 'signin.html';
+                });
+
+                productListContainer.addEventListener('click', async function (e) {
+                    const target = e.target.closest('.details-btn, .edit-btn, .delete-btn');
+                    if (!target) return;
+                    const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js");
+
+                    const productId = target.dataset.id;
+                    if (target.classList.contains('details-btn')) {
+                        showProductDetails(productId);
+                    } else if (target.classList.contains('edit-btn') && hasPermission(currentUser, 'edit')) {
+                        localStorage.setItem('editProductId', productId);
+                        window.location.href = 'add-product.html';
+                    } else if (target.classList.contains('delete-btn') && hasPermission(currentUser, 'manage_employees')) {
+                        if (confirm('Are you sure you want to permanently delete this product from the database? This action cannot be undone.')) {
+                            try {
+                                await deleteDoc(doc(db, "products", productId));
+                                alert('Product deleted successfully.');
+                                // Refresh data from Firestore
+                                await loadProductsFromFirestore();
+                                filterAndSortProducts();
+                            } catch (error) {
+                                console.error("Error removing document: ", error);
+                                alert("Failed to delete product. See console for details.");
+                            }
+                        }
+                    }
+                });
+
+                searchInput.addEventListener('input', filterAndSortProducts);
+                sortBySelect.addEventListener('change', filterAndSortProducts);
+            }
+
+
+            // --- Theme Switcher ---
+            function setupThemeSwitcher() {
+                const themeSwitcher = document.getElementById('theme-switcher');
+                const htmlEl = document.documentElement;
+                const applyTheme = (theme) => htmlEl.setAttribute('data-bs-theme', theme);
+                const updateSwitcherUI = (theme) => {
+                    const thumb = themeSwitcher.querySelector('.slider-thumb');
+                    const sunIcon = themeSwitcher.querySelector('.sun');
+                    const moonIcon = themeSwitcher.querySelector('.moon');
+                    thumb.style.transform = theme === 'dark' ? 'translateX(30px)' : 'translateX(0px)';
+                    if (sunIcon) sunIcon.style.display = theme === 'dark' ? 'block' : 'none';
+                    if (moonIcon) moonIcon.style.display = theme === 'dark' ? 'none' : 'block';
+                };
+                const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                applyTheme(savedTheme);
+                updateSwitcherUI(savedTheme);
+                themeSwitcher.addEventListener('click', () => {
+                    const newTheme = htmlEl.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                    applyTheme(newTheme);
+                    updateSwitcherUI(newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            }
+
+            // --- Initialization ---
+            async function init() {
+                const { getFirestore, collection, query, where, getDocs, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js");
+                const { app } = await import('./firebase-init.js');
+                db = getFirestore(app);
+
+                const sessionUserId = sessionStorage.getItem('loggedInUserId');
+                if (sessionUserId) {
+                    const userDocRef = doc(db, "users", sessionUserId);
+                    const userDocSnap = await getDoc(userDocRef);
+                    if (userDocSnap.exists()) {
+                        currentUser = { id: userDocSnap.id, ...userDocSnap.data() };
+
+                        // Check for page view permission first
+                        if (!hasPermission(currentUser, 'all_product')) {
+                            alert('Access Denied. You do not have permission to view products.');
+                            window.location.href = 'dashboard.html';
+                            return;
+                        }
+                        function setupUI(user) {
+                            function hasPermissionForNav(user, mainPerm, relatedPerms = []) {
+                                if (hasPermission(user, mainPerm)) {
+                                    return true;
+                                }
+                                for (const perm of relatedPerms) {
+                                    if (hasPermission(user, perm)) {
+                                        return true;
+                                    }
+                                }
+                                return false;
+                            }
+                            const navItems = {
+                                'dashboard': { el: document.querySelector('a[href="dashboard.html"]')?.closest('.nav-item'), perm: 'dashboard' },
+                                'products': { el: document.querySelector('a[href="#productSubmenu"]')?.closest('.nav-item'), perm: 'products', related: ['all_product', 'add_product'] },
+                                'purchase': { el: document.querySelector('a[href="#purchaseSubmenu"]')?.closest('.nav-item'), perm: 'purchase', related: ['purchase_return', 'purchase_return_history'] },
+                                'sales': { el: document.querySelector('a[href="#salesSubmenu"]')?.closest('.nav-item'), perm: 'sales', related: ['add_sale', 'add_sale_record', 'pos_sale_history', 'sell_return', 'sell_return_history'] },
+                                'people': { el: document.querySelector('a[href="#peopleSubmenu"]')?.closest('.nav-item'), perm: 'people', related: ['customer', 'supplier'] },
+                                'leaderboard': { el: document.getElementById('leaderboard-nav-item'), perm: 'leaderboard' },
+                                'employee': { el: document.getElementById('employee-nav-item'), perm: 'manage_employees' },
+                                'account': { el: document.querySelector('a[href="account.html"]')?.closest('.nav-item'), perm: null }, // Always visible
+                                'pos': { el: document.querySelector('a[href="pos.html"]'), perm: 'pos' }
+                            };
+            
+                            for (const key in navItems) {
+                                const item = navItems[key];
+                                if (item.el) {
+                                    // For employees, never show the 'employee' management link.
+                                    if (user.role === 'employee' && key === 'employee') {
+                                        item.el.style.display = 'none';
+                                    } else if (item.perm === null || hasPermissionForNav(user, item.perm, item.related || [])) {
+                                        item.el.style.display = ''; // Show the nav item
+                                    } else {
+                                        item.el.style.display = 'none'; // Hide the nav item
+                                    }
+                                }
+                            }
+                        }
+                        setupUI(currentUser);
+                        
+                        welcomeMessage.textContent = `Welcome, ${currentUser.name.split(' ')[0]}`;
+
+                        await Promise.all([
+                            loadProductsFromFirestore(),
+                            getDocs(collection(db, "purchases")).then(snap => allPurchases = snap.docs.map(doc => ({ firestoreId: doc.id, ...doc.data() })))
+                        ]);
+                    } else {
+                        throw new Error("User document not found in database.");
+                    }
+                } else {
+                    alert("Authentication error. Please sign in again.");
+                    window.location.href = 'signin.html';
+                    return;
+                }
+
+                setupEventListeners();
+                setupThemeSwitcher();
+                filterAndSortProducts(); // Initial render
+            }
+
+            init();
+        });
+    </script>
+    <script type="module" src="firebase-init.js"></script>
+</body>
+
+</html>

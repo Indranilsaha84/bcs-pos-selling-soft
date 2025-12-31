@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Portal</title>
+    <link rel="icon" href="logo.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bs-primary-rgb: 99, 102, 241;
+            --bs-primary: #6366f1;
+            --bs-body-font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--bs-body-font-family);
+            background-color: var(--bs-tertiary-bg);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            padding-top: 72px;
+            flex-grow: 1;
+            padding-bottom: 40px;
+        }
+
+        .stat-card {
+            border: none;
+            border-radius: .75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, .1), 0 2px 4px -2px rgba(0, 0, 0, .1);
+        }
+
+        .stat-card .card-body {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-card .icon-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-switch-wrapper {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 1001;
+        }
+
+        #theme-switcher {
+            background: none;
+            border: 1px solid var(--bs-border-color-translucent);
+            padding: 0;
+            cursor: pointer;
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: var(--bs-tertiary-bg);
+            border-radius: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slider-thumb .sun { display: none; }
+        .slider-thumb .moon { display: block; }
+        [data-bs-theme="dark"] .slider-thumb .sun { display: block; }
+        [data-bs-theme="dark"] .slider-thumb .moon { display: none; }
+        [data-bs-theme="dark"] #theme-switcher .slider-thumb {
+            transform: translateX(30px);
+        }
+
+        .footer {
+            background-color: var(--bs-body-bg);
+            padding: 1rem;
+            border-top: 1px solid var(--bs-border-color);
+        }
+
+        [data-bs-theme="dark"] .footer {
+            background: linear-gradient(270deg, #1e1b4b 0%, #3730a3 100%);
+        }
+
+        [data-bs-theme="light"] .footer {
+            background: linear-gradient(270deg, #e0e7ff 0%, #eef2ff 100%);
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        // Basic authentication check
+        if (sessionStorage.getItem('isAuthenticated') !== 'true' || sessionStorage.getItem('userType') !== 'customer') {
+            sessionStorage.clear(); // Clear session if auth fails
+            window.location.href = 'signin.html';
+        }
+    </script>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Customer Portal</a>
+            <div>
+                <span id="welcomeMessage" class="navbar-text text-white me-3"></span>
+                <button id="logoutButton" class="btn btn-danger" title="Logout">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container px-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2" id="customerNameHeader">Welcome!</h1>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square me-2" viewBox="0 0 16 16">
+                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zM13.75 3.5l-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                    </svg>
+                    Edit Profile
+                </button>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4 mb-4">
+                    <div class="card stat-card bg-primary-subtle text-primary-emphasis h-100">
+                        <div class="card-body">
+                            <div>
+                                <h6 class="card-title text-uppercase small">Your Loyalty Points</h6>
+                                <h3 class="fw-bold" id="customerPoints">0</h3>
+                            </div>
+                            <div class="icon-circle bg-primary text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                                    class="bi bi-star-fill" viewBox="0 0 16 16">
+                                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card stat-card bg-success-subtle text-success-emphasis h-100">
+                        <div class="card-body">
+                            <div>
+                                <h6 class="card-title text-uppercase small">Total Purchase</h6>
+                                <h3 class="fw-bold" id="totalPurchase">0.00 BDT</h3>
+                            </div>
+                            <div class="icon-circle bg-success text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-cart-check-fill" viewBox="0 0 16 16">
+                                    <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 4 0h3.5a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1.646-7.646-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card stat-card bg-danger-subtle text-danger-emphasis h-100">
+                        <div class="card-body">
+                            <div>
+                                <h6 class="card-title text-uppercase small">Total Due</h6>
+                                <h3 class="fw-bold" id="totalDue">0.00 BDT</h3>
+                            </div>
+                            <div class="icon-circle bg-danger text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-hourglass-split" viewBox="0 0 16 16">
+                                    <path d="M2.5 15a.5.5 0 1 1 0-1h11a.5.5 0 0 1 0 1h-11zm.21-11.542a.5.5 0 0 1 .78 0l2.99 4.225a.5.5 0 0 1 0 .564l-2.99 4.225a.5.5 0 0 1-.78-.564L4.89 8 2.71 3.958a.5.5 0 0 1 0-.564zm8.58 0a.5.5 0 0 1 .78 0l2.99 4.225a.5.5 0 0 1 0 .564l-2.99 4.225a.5.5 0 0 1-.78-.564L11.11 8l-2.18-3.042a.5.5 0 0 1 0-.564zM13.5 1a.5.5 0 0 0 0 1h-11a.5.5 0 0 0 0-1h11z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Your Profile</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Customer ID:</strong> <span id="profileId"></span></p>
+                            <p><strong>Full Name:</strong> <span id="profileName"></span></p>
+                            <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+                            <p><strong>Phone:</strong> <span id="profilePhone"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Customer Type:</strong> <span id="profileCustomerType"></span></p>
+                            <p><strong>Date of Birth:</strong> <span id="profileDob"></span></p>
+                            <p><strong>Language:</strong> <span id="profileLanguage"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Purchase History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Sale ID</th>
+                                    <th>Date & Time</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="purchaseHistoryTable">
+                                <!-- History rows will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+ <!-- Footer -->
+    <footer class="footer">
+      <div class="text-center">
+         <span class="text-muted">Made with care in <Strong>Bangladesh 🇧🇩 </Strong>| <strong> Devloped by</strong>: Indranil Saha | <strong> Version</strong>: 28.0.0 | <Strong>Powered by</Strong>: Google Firebase.</span>
+      </div>
+   </footer>
+
+    <!-- Theme Switcher -->
+    <div class="theme-switch-wrapper">
+        <button id="theme-switcher" aria-label="Toggle theme">
+            <span class="slider-thumb bg-secondary">
+                <svg class="sun" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
+                </svg>
+                <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
+                </svg>
+            </span>
+        </button>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProfileModalLabel">Edit Your Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editProfileForm">
+                        <h6 class="text-muted mb-3">Personal Information</h6>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="firstName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="lastName">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Phone</label>
+                                <input type="tel" class="form-control" id="phone" required>
+                            </div>
+                             <div class="col-md-6">
+                                <label for="dob" class="form-label">Date of Birth</label>
+                                <input type="date" class="form-control" id="dob">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="language" class="form-label">Language</label>
+                                <input type="text" class="form-control" id="language">
+                            </div>
+                        </div>
+                        <hr>
+                        <h6 class="text-muted mb-3">Change Password (Optional)</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="currentPassword" class="form-label">Current Password</label>
+                                <input type="password" class="form-control" id="currentPassword" placeholder="Required to change password">
+                            </div>
+                            <div class="col-md-6"></div>
+                            <div class="col-md-6">
+                                <label for="newPassword" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="newPassword">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirmNewPassword">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="editProfileForm" class="btn btn-primary">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sale Details Modal -->
+    <div class="modal fade" id="saleDetailsModal" tabindex="-1" aria-labelledby="saleDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="saleDetailsModalLabel">Sale Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="saleDetailsContainer">
+                    <!-- Details will be injected here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+        import { app } from './firebase-init.js';
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            const db = getFirestore(app);
+            const customerId = sessionStorage.getItem('loggedInCustomerId');
+            let customerSales = [];
+            let customerData = null;
+
+            if (!customerId) {
+                alert("Could not find customer session. Please log in again.");
+                sessionStorage.clear();
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            // Fetch customer data and sales data in parallel
+            const [customerDocSnap, salesSnapshot] = await Promise.all([
+                getDoc(doc(db, "customers", customerId)),
+                getDocs(query(collection(db, "sales"), where("customer.id", "==", customerId), orderBy("date", "desc")))
+            ]);
+
+            // Process customer data
+            if (!customerDocSnap.exists()) {
+                alert("Could not retrieve your customer profile. Please contact support."); sessionStorage.clear(); window.location.href = 'signin.html'; return;
+            }
+            customerData = customerDocSnap.data();
+            document.getElementById('welcomeMessage').textContent = `Welcome, ${customerData.name.split(' ')[0]}`;
+            document.getElementById('customerNameHeader').textContent = `Welcome, ${customerData.name}!`;
+            document.getElementById('customerPoints').textContent = customerData.points || 0;
+
+            // Display full profile
+            document.getElementById('profileId').textContent = customerData.displayId || 'N/A';
+            document.getElementById('profileName').textContent = customerData.name || 'N/A';
+            document.getElementById('profileEmail').textContent = customerData.email || 'N/A';
+            document.getElementById('profilePhone').textContent = customerData.phone || 'N/A';
+            document.getElementById('profileCustomerType').textContent = (customerData.customerType || 'N/A').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            document.getElementById('profileDob').textContent = customerData.dob || 'N/A';
+            document.getElementById('profileLanguage').textContent = customerData.language || 'N/A';
+
+
+            // Process sales data
+            customerSales = salesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            const totalPurchase = customerSales.reduce((sum, sale) => sum + (sale.totalAmount || 0), 0);
+            const totalDue = customerSales.reduce((sum, sale) => sum + (sale.dueAmount || 0), 0);
+
+            document.getElementById('totalPurchase').textContent = `${totalPurchase.toFixed(2)} BDT`;
+            document.getElementById('totalDue').textContent = `${totalDue.toFixed(2)} BDT`;
+
+            // Populate purchase history table
+            const historyTableBody = document.getElementById('purchaseHistoryTable');
+            historyTableBody.innerHTML = '';
+            if (customerSales.length === 0) {
+                historyTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No purchase history found.</td></tr>';
+            } else {
+                customerSales.forEach(sale => {
+                    const saleDate = new Date(sale.date.seconds * 1000);
+                    const status = sale.paymentStatus || (sale.dueAmount > 0 ? 'Due' : 'Paid');
+                    let statusBadge = '';
+                    if (status === 'Paid') { statusBadge = `<span class="badge bg-success-subtle text-success-emphasis">${status}</span>`; }
+                    else if (status === 'Partial') { statusBadge = `<span class="badge bg-warning-subtle text-warning-emphasis">${status}</span>`; }
+                    else { statusBadge = `<span class="badge bg-danger-subtle text-danger-emphasis">${status}</span>`; }
+
+                    const row = `
+                        <tr>
+                            <td>${sale.id}</td>
+                            <td>${saleDate.toLocaleString()}</td>
+                            <td class="text-center">${statusBadge}</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-primary details-btn" data-sale-id="${sale.id}">Details</button>
+                            </td>
+                        </tr>`;
+                    historyTableBody.insertAdjacentHTML('beforeend', row);
+                });
+            }
+
+            // --- Edit Profile Modal Logic ---
+            const editProfileModalEl = document.getElementById('editProfileModal');
+            const editProfileForm = document.getElementById('editProfileForm');
+
+            editProfileModalEl.addEventListener('show.bs.modal', () => {
+                // Populate the modal with current data
+                document.getElementById('firstName').value = customerData.firstName || customerData.name.split(' ')[0] || '';
+                document.getElementById('lastName').value = customerData.lastName || customerData.name.split(' ').slice(1).join(' ') || '';
+                document.getElementById('email').value = customerData.email || '';
+                document.getElementById('phone').value = customerData.phone || '';
+                document.getElementById('dob').value = customerData.dob || '';
+                document.getElementById('language').value = customerData.language || '';
+                // Clear password fields
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmNewPassword').value = '';
+            });
+
+            editProfileForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const customerRef = doc(db, "customers", customerId);
+
+                const updatedData = {
+                    firstName: document.getElementById('firstName').value.trim(),
+                    lastName: document.getElementById('lastName').value.trim(),
+                    name: `${document.getElementById('firstName').value.trim()} ${document.getElementById('lastName').value.trim()}`.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    phone: document.getElementById('phone').value.trim(),
+                    dob: document.getElementById('dob').value,
+                    language: document.getElementById('language').value.trim(),
+                };
+
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+                if (newPassword) {
+                    if (!currentPassword) {
+                        alert('Please enter your current password to set a new one.');
+                        return;
+                    }
+                    if (currentPassword !== customerData.password) {
+                        alert('Incorrect current password.');
+                        return;
+                    }
+                    if (newPassword !== confirmNewPassword) {
+                        alert('New passwords do not match.');
+                        return;
+                    }
+                    updatedData.password = newPassword;
+                }
+
+                try {
+                    await updateDoc(customerRef, updatedData);
+                    alert('Profile updated successfully!');
+                    bootstrap.Modal.getInstance(editProfileModalEl).hide();
+                    location.reload(); // Reload to show updated data
+                } catch (error) {
+                    console.error("Error updating profile:", error);
+                    alert("Failed to update profile. Please try again.");
+                }
+            });
+
+
+            // Event Listeners
+            document.getElementById('logoutButton').addEventListener('click', () => {
+                sessionStorage.clear();
+                window.location.href = 'signin.html';
+            });
+
+            const themeSwitcher = document.getElementById('theme-switcher');
+            const htmlEl = document.documentElement;
+            const applyTheme = (theme) => {
+                htmlEl.setAttribute('data-bs-theme', theme);
+                updateSwitcherUI(theme);
+            };
+            const updateSwitcherUI = (theme) => {
+                const thumb = themeSwitcher.querySelector('.slider-thumb');
+                thumb.style.transform = theme === 'dark' ? 'translateX(30px)' : 'translateX(0px)';
+            };
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            applyTheme(savedTheme);
+            themeSwitcher.addEventListener('click', () => {
+                const newTheme = htmlEl.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                applyTheme(newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+
+            historyTableBody.addEventListener('click', (e) => {
+                if (e.target.classList.contains('details-btn')) {
+                    const saleId = e.target.dataset.saleId;
+                    const sale = customerSales.find(s => s.id === saleId);
+                    if (sale) {
+                        const saleDetailsContainer = document.getElementById('saleDetailsContainer');
+                        const itemsHtml = sale.items.map(item => `
+                            <tr>
+                                <td>${item.name}</td>
+                                <td class="text-center">${item.quantity}</td>
+                                <td class="text-end">${(item.price || 0).toFixed(2)}</td>
+                                <td class="text-end">${((item.price || 0) * item.quantity).toFixed(2)}</td>
+                            </tr>
+                        `).join('');
+
+                        saleDetailsContainer.innerHTML = `
+                            <p><strong>Sale ID:</strong> ${sale.id}</p>
+                            <p><strong>Date:</strong> ${new Date(sale.date.seconds * 1000).toLocaleString()}</p>
+                            <table class="table table-sm">
+                                <thead><tr><th>Item</th><th class="text-center">Qty</th><th class="text-end">Price</th><th class="text-end">Total</th></tr></thead>
+                                <tbody>${itemsHtml}</tbody>
+                            </table>
+                            <hr>
+                            <div class="d-flex justify-content-between"><span>Subtotal:</span> <span>${(sale.subtotal || 0).toFixed(2)}</span></div>
+                            <div class="d-flex justify-content-between"><span>Discount:</span> <span>-${(sale.discount || 0).toFixed(2)}</span></div>
+                            <div class="d-flex justify-content-between fw-bold fs-5"><span>Grand Total:</span> <span>${(sale.totalAmount || 0).toFixed(2)} BDT</span></div>
+                            <div class="d-flex justify-content-between"><span>Paid:</span> <span>${(sale.paidAmount || 0).toFixed(2)}</span></div>
+                            <div class="d-flex justify-content-between text-danger"><span>Due:</span> <span>${(sale.dueAmount || 0).toFixed(2)}</span></div>
+                        `;
+                        const detailsModal = new bootstrap.Modal(document.getElementById('saleDetailsModal'));
+                        detailsModal.show();
+                    }
+                }
+            });
+        });
+    </script>
+    <script type="module" src="firebase-init.js"></script>
+</body>
+
+</html>
