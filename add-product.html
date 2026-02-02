@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product</title>
+    <link rel="icon" href="logo.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bs-primary-rgb: 99, 102, 241;
+            --bs-primary: #6366f1;
+            --bs-body-font-family: 'Inter', sans-serif;
+        }
+        body {
+            font-family: var(--bs-body-font-family);
+            background-color: var(--bs-tertiary-bg);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100%;
+            padding-top: 56px;
+            background-color: var(--bs-body-bg);
+            border-right: 1px solid var(--bs-border-color);
+            z-index: 1020;
+            overflow-y: auto;
+        }
+        .sidebar .nav-link {
+            color: var(--bs-body-color);
+            padding: .75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
+        .sidebar .nav-link:hover {
+            background-color: var(--bs-tertiary-bg);
+        }
+
+        .sidebar .nav-link.active {
+            color: var(--bs-primary);
+            font-weight: 600;
+            border-left-color: var(--bs-primary);
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding-top: 72px;
+            flex-grow: 1;
+            padding-bottom: 40px;
+        }
+        .theme-switch-wrapper {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 1001;
+        }
+
+        #theme-switcher {
+            background: none;
+            border: 1px solid var(--bs-border-color-translucent);
+            padding: 0;
+            cursor: pointer;
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: var(--bs-tertiary-bg);
+            border-radius: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .footer {
+            background-color: var(--bs-body-bg);
+            padding: 1rem;
+            border-top: 1px solid var(--bs-border-color);
+            margin-left: 240px;
+        }
+
+        [data-bs-theme="dark"] .footer {
+            background: linear-gradient(270deg, #1e1b4b 0%, #3730a3 100%);
+        }
+
+        [data-bs-theme="light"] .footer {
+            background: linear-gradient(270deg, #e0e7ff 0%, #eef2ff 100%);
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        if (sessionStorage.getItem('isAuthenticated') !== 'true') {
+            window.location.href = 'signin.html';
+        }
+    </script>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.html" style="margin-left: 240px;">Baroda Computure And Sales</a>
+            <div>
+                <a href="pos.html" class="btn btn-warning me-2" title="Go to Point of Sale">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-cart-check-fill" viewBox="0 0 16 16">
+                        <path
+                            d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 4 0h3.5a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1.646-7.646-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708z" />
+                    </svg>
+                    POS
+                </a>
+                <span id="welcomeMessage" class="navbar-text text-white me-3"></span>
+                <button id="logoutButton" class="btn btn-danger" title="Logout from the application">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="sidebar">
+        <div class="p-3 text-center border-bottom">
+            <h5 class="mb-0">Navigation</h5>
+        </div>
+        <ul class="nav flex-column pt-2">
+            <li class="nav-item">
+                <a class="nav-link" href="dashboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="#productSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="true" aria-controls="productSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <path d="M16 13H8"></path>
+                        <path d="M16 17H8"></path>
+                        <path d="M10 9H8"></path>
+                    </svg>
+                    Products
+                </a>
+                <div class="collapse show" id="productSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="web.html">All Product</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link active" href="add-product.html">Add product</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item" id="print-label-nav-item">
+                <a class="nav-link" href="#printLabelSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="printLabelSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                        <rect x="6" y="14" width="12" height="8"></rect>
+                    </svg>
+                    <span>Print Label</span>
+                </a>
+                <div class="collapse" id="printLabelSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="barcode_generator.html">Barcode Generator</a></li>
+                    <li class="nav-item"><a class="nav-link sub-link" href="print-customar-card.html">Print Customer Card</a></li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#purchaseSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="false" aria-controls="purchaseSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 10V7a5 5 0 0 1 10 0v3"></path>
+                        <path
+                            d="M17 10h-1a4 4 0 0 0-8 0H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Z">
+                        </path>
+                    </svg>
+                    Purchase
+                </a>
+                <div class="collapse" id="purchaseSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase.html">Add purchase</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-history.html">Purchase History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-return.html">Purchase Return</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-return-history.html">Purchase Return History</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="all-sale-history.html">All Sales History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="add-sale-history.html">Add Sales History</a></li>            <li class="nav-item">
+                <a class="nav-link" href="#salesSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="salesSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bag-check" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M10.854 8.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                    <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1m3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/>
+                    </svg>
+                    Sales
+                </a>
+                <div class="collapse" id="salesSubmenu">
+                    
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="all-sale-history.html">All Sales History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="add-sale-history.html">Add Sales History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="pos-sales-history.html">POS Sales History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="add-sale.html">Add sale</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="order-sale-history.html">Order Sale History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="sell-return.html">Sell Return</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="sell-return-history.html">Sell Return
+                         History</a>
+                        </li>
+                        
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#peopleSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="peopleSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-users">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    People
+                </a>
+                <div class="collapse" id="peopleSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="customer.html">Customer List</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="supplier.html">Supplier List</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="order.html">Order</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#reportsSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="reportsSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-bar-chart-2">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    Reports
+                </a>
+                <div class="collapse" id="reportsSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="profit-and-loss.html">Profit &
+                                Loss</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-report.html">Stock Report</a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-adjust.html">Stock Adjust</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item" id="leaderboard-nav-item">
+                <a class="nav-link" href="leaderboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-award"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                    Leaderboard
+                </a>
+            </li>
+            <li class="nav-item" id="employee-nav-item" style="display: none;">
+                <a class="nav-link" href="employee.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Employee
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="account.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Account
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="container-fluid px-4">
+            <div
+                class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Add New Product</h1>
+            </div>
+
+            <div class="card">
+                <div class="card-body p-4">
+                    <form id="addProductForm">
+                        <h5 class="mb-3 text-muted">Basic Information</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="productName" class="form-label">1. Product Name</label>
+                                <input type="text" class="form-control" id="productName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="sku" class="form-label">2. PBR (Barcode)</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="sku" placeholder="Product Barcode">
+                                    <button class="btn btn-outline-secondary" type="button" id="generateBarcodeBtn">Generate Barcode</button>
+                                </div>
+                                <div id="barcode-error" class="invalid-feedback" style="display: none;">This barcode is already in use.</div>
+                           </div>
+                            <div class="col-md-6">
+                                <label for="barcodeType" class="form-label">3. Barcode Type</label>
+                                <select class="form-select" id="barcodeType" disabled>
+                                    <option selected>Code 128</option>
+                                    <option>EAN-13</option>
+                                    <option>UPC-A</option>
+                                    <option>QR Code</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="unit" class="form-label">4. Unit</label>
+                                <select class="form-select" id="unit">
+                                    <option selected>Pcs</option>
+                                    <option>Box</option>
+                                    <option>Kg</option>
+                                    <option>Liter</option>
+                                    <option>Packet</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <div class="row g-3" id="boxFields" style="display: none;">
+                                    <div class="col-md-6">
+                                        <label for="packetPerBox" class="form-label">4a. packet / box</label>
+                                        <input type="number" class="form-control" id="packetPerBox" min="0">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="pcsPerBox" class="form-label">4b. pcs/packet</label>
+                                        <input type="number" class="form-control" id="pcsPerBox" min="0">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="row g-3" id="packetFields" style="display: none;">
+                                    <div class="col-12">
+                                        <label for="pcsPerPacket" class="form-label">4c. PCS / Packet (Optional)</label>
+                                        <input type="number" class="form-control" id="pcsPerPacket" min="0">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="brand" class="form-label">5. Brand</label>
+                                <input type="text" class="form-control" id="brand">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">6. Category</label>
+                                <input class="form-control" list="categoryOptions" id="category"
+                                    placeholder="Type or select a category..." required>
+                                <datalist id="categoryOptions">
+                                    <option value="Office Item">
+                                    <option value="Stationary Item">
+                                    <option value="Other">
+                                </datalist>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="alertQuantity" class="form-label">7. Alert Quantity</label>
+                                <input type="number" class="form-control" id="alertQuantity" min="1" value="1">
+                            </div>
+                            <div class="col-12">
+                                <label for="productImageUrl" class="form-label">8. Product Image (URL)</label>
+                                <input type="url" class="form-control" id="productImageUrl" placeholder="https://via.placeholder.com/150?text=No+Image">
+                            </div>
+                            <!-- PCS Pricing Section -->
+                            <div id="standardPriceFields" class="row g-3 border-top pt-3 mt-3">
+                                <h5 class="mb-0">PCS Pricing</h5>
+                                <div class="col-md-12"><label class="form-label">Buy Price / Pcs</label><input type="number" class="form-control" id="buyPrice" step="0.01" required placeholder="Required"></div>
+                                <hr>
+                                <div class="col-md-6"><label class="form-label">Wholesale Price / Pcs (Normal Customer)</label><input type="number" class="form-control" id="wholesalePriceNormal" step="0.01" required></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale Price / Pcs (Shop Customer)</label><input type="number" class="form-control" id="wholesalePriceShop" step="0.01" required></div>
+                                <hr>
+                                <div class="col-md-6"><label class="form-label">Sale Price / Pcs (Normal Customer)</label><input type="number" class="form-control" id="sellPriceNormal" step="0.01" required></div>
+                                <div class="col-md-6"><label class="form-label">Sale Price / Pcs (Shop Customer)</label><input type="number" class="form-control" id="sellPriceShop" step="0.01" required></div>
+                            </div>
+
+                            <!-- Box Pricing Section -->
+                            <div id="boxPriceFields" style="display: none;" class="row g-3 border-top pt-3 mt-3">
+                                <h5 class="mb-3">Box/Pack/Pcs Pricing</h5>
+                                <!-- Box Prices -->
+                                <div class="col-12"><h6 class="text-muted">Box Pricing</h6></div>
+                                <div class="col-md-12"><label class="form-label">Buy Price / Box</label><input type="number" class="form-control" id="buyPriceBox" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale / Box (Normal Customer)</label><input type="number" class="form-control" id="wholesalePriceBoxNormal" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale / Box (Shop Customer)</label><input type="number" class="form-control" id="wholesalePriceBoxShop" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Sale / Box (Normal Customer)</label><input type="number" class="form-control" id="sellPriceBoxNormal" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Sale / Box (Shop Customer)</label><input type="number" class="form-control" id="sellPriceBoxShop" step="0.01"></div>
+                                <hr class="my-3">
+                                <!-- Pack Prices -->
+                                <div class="col-12"><h6 class="text-muted">Pack Pricing (Optional)</h6></div>
+                                <div class="col-md-12"><label class="form-label">Buy Price / Pack</label><input type="number" class="form-control" id="buyPricePack" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale / Pack (Normal Customer)</label><input type="number" class="form-control" id="wholesalePricePackNormal" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale / Pack (Shop Customer)</label><input type="number" class="form-control" id="wholesalePricePackShop" step="0.01"></div>
+                                <hr class="my-3">
+                                <!-- PCS Prices -->
+                                <div class="col-12"><h6 class="text-muted">PCS Pricing (Optional)</h6></div>
+                                <div class="col-md-12"><label class="form-label">Buy Price / Pcs</label><input type="number" class="form-control" id="buyPricePcs" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Sale / Pcs (Normal Customer)</label><input type="number" class="form-control" id="sellPricePcsNormal" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Sale / Pcs (Shop Customer)</label><input type="number" class="form-control" id="sellPricePcsShop" step="0.01"></div>
+                            </div>
+
+                            <!-- Kg/Gram Pricing Section -->
+                            <div id="kgPriceFields" style="display: none;" class="row g-3 border-top pt-3 mt-3">
+                                <h5 class="mb-3">Kg/Gram Pricing</h5>
+                                <div class="col-12"><h6 class="text-muted">Kg Pricing</h6></div>
+                                <div class="col-md-12"><label class="form-label">Buy Price / Kg</label><input type="number" class="form-control" id="buyPriceKg" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale / Kg (Normal Customer)</label><input type="number" class="form-control" id="wholesalePriceKgNormal" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale / Kg (Shop Customer)</label><input type="number" class="form-control" id="wholesalePriceKgShop" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Sale / Kg (Normal Customer)</label><input type="number" class="form-control" id="sellPriceKgNormal" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Sale / Kg (Shop Customer)</label><input type="number" class="form-control" id="sellPriceKgShop" step="0.01"></div>
+                                <hr class="my-3">
+                                <div class="col-12"><h6 class="text-muted">Gram Pricing (Optional)</h6></div>
+                                <div class="col-md-12"><label class="form-label">Buy Price / Gram</label><input type="number" class="form-control" id="buyPriceGram" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale / Gram (Normal Customer)</label><input type="number" class="form-control" id="wholesalePriceGramNormal" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale / Gram (Shop Customer)</label><input type="number" class="form-control" id="wholesalePriceGramShop" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Sale / Gram (Normal Customer)</label><input type="number" class="form-control" id="sellPriceGramNormal" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Sale / Gram (Shop Customer)</label><input type="number" class="form-control" id="sellPriceGramShop" step="0.01"></div>
+                            </div>
+
+                            <!-- Liter/ML Pricing Section -->
+                            <div id="literPriceFields" style="display: none;" class="row g-3 border-top pt-3 mt-3">
+                                <h5 class="mb-3">Liter/ML Pricing</h5>
+                                <div class="col-12"><h6 class="text-muted">Liter Pricing</h6></div>
+                                <div class="col-md-12"><label class="form-label">Buy Price / Liter</label><input type="number" class="form-control" id="buyPriceLiter" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale / Liter (Normal Customer)</label><input type="number" class="form-control" id="wholesalePriceLiterNormal" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale / Liter (Shop Customer)</label><input type="number" class="form-control" id="wholesalePriceLiterShop" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Sale / Liter (Normal Customer)</label><input type="number" class="form-control" id="sellPriceLiterNormal" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Sale / Liter (Shop Customer)</label><input type="number" class="form-control" id="sellPriceLiterShop" step="0.01"></div>
+                                <hr class="my-3">
+                                <div class="col-12"><h6 class="text-muted">ML Pricing (Optional)</h6></div>
+                                <div class="col-md-12"><label class="form-label">Buy Price / ML</label><input type="number" class="form-control" id="buyPriceMl" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale / ML (Normal Customer)</label><input type="number" class="form-control" id="wholesalePriceMlNormal" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale / ML (Shop Customer)</label><input type="number" class="form-control" id="wholesalePriceMlShop" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Sale / ML (Normal Customer)</label><input type="number" class="form-control" id="sellPriceMlNormal" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Sale / ML (Shop Customer)</label><input type="number" class="form-control" id="sellPriceMlShop" step="0.01"></div>
+                            </div>
+
+                            <!-- Packet/PCS Pricing Section -->
+                            <div id="packetPriceFields" style="display: none;" class="row g-3 border-top pt-3 mt-3">
+                                <h5 class="mb-3">Packet/PCS Pricing</h5>
+                                <div class="col-12"><h6 class="text-muted">Packet Pricing</h6></div>
+                                <div class="col-md-12"><label class="form-label">Buy Price / Packet</label><input type="number" class="form-control" id="buyPricePacket" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale / Packet (Normal Customer)</label><input type="number" class="form-control" id="wholesalePricePacketNormal" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale / Packet (Shop Customer)</label><input type="number" class="form-control" id="wholesalePricePacketShop" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Sale / Packet (Normal Customer)</label><input type="number" class="form-control" id="sellPricePacketNormal" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Sale / Packet (Shop Customer)</label><input type="number" class="form-control" id="sellPricePacketShop" step="0.01"></div>
+                                <hr class="my-3">
+                                <div class="col-12"><h6 class="text-muted">PCS Pricing (Optional)</h6></div>
+                                <div class="col-md-12"><label class="form-label">Buy Price / PCS</label><input type="number" class="form-control" id="buyPricePacketPcs" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale / PCS (Normal Customer)</label><input type="number" class="form-control" id="wholesalePricePacketPcsNormal" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Wholesale / PCS (Shop Customer)</label><input type="number" class="form-control" id="wholesalePricePacketPcsShop" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Sale / PCS (Normal Customer)</label><input type="number" class="form-control" id="sellPricePacketPcsNormal" step="0.01"></div>
+                                <div class="col-md-6"><label class="form-label">Sale / PCS (Shop Customer)</label><input type="number" class="form-control" id="sellPricePacketPcsShop" step="0.01"></div>
+                            </div>
+
+                        </div>
+                        <hr class="my-4"> <h5 class="mb-3 text-muted">Additional Information (Optional)</h5>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">1. Description</label>
+                            <textarea class="form-control" id="description" rows="3"></textarea>
+                        </div>
+                        <div class="mt-4 d-flex justify-content-end gap-2">
+                            <button type="button" id="cancelEditBtn" class="btn btn-secondary"
+                                >Cancel</button><button type="submit" id="saveAndGoToPurchaseBtn" class="btn btn-info">Save &amp; Go to
+                                Purchase</button>
+                            <button type="submit" id="saveAndAddAnotherBtn" class="btn btn-success">Save & Add
+                                Another</button>
+                            <button type="submit" id="saveProductBtn" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="text-center">
+            <span>Made with care in <strong>Bangladesh 🇧🇩 </strong>| <strong> Developed by</strong>: Indranil Saha | <strong> Version</strong>: 48.9.9 | <strong>Powered by</strong>: <a href="https://firebase.google.com/" target="_blank" class="text-decoration-none">Google Firebase.</a></span>
+        </div>
+    </footer>
+
+    <!-- Theme Switch -->
+    <div class="theme-switch-wrapper">
+        <button id="theme-switcher" aria-label="Toggle theme">
+            <span class="slider-thumb bg-secondary">
+                <svg class="sun" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                    fill="currentColor" viewBox="0 0 16 16">
+                    <path
+                        d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
+                </svg>
+                <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    viewBox="0 0 16 16">
+                    <path
+                        d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
+                </svg>
+            </span>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import { getFirestore, collection, getDocs, doc, getDoc, addDoc, updateDoc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+        import { app } from './firebase-init.js';
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const addProductForm = document.getElementById('addProductForm');
+            const unitSelect = document.getElementById('unit');
+            let currentUser = null;
+            let allProducts = [];
+            let editProductId = null;
+            const db = getFirestore(app);
+
+            function hasPermission(permission) {
+                if (!currentUser) return false;
+                if (currentUser.role === 'admin') return true;
+                return currentUser.permissions?.includes(permission);
+            }
+
+            async function checkBarcodeUniqueness(barcode, currentProductId = null) {
+                if (!barcode) return true; // Don't check empty barcodes
+                const q = query(collection(db, "products"), where("barcode", "==", barcode));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) return true;
+                // If we are editing, allow the barcode if it belongs to the current product
+                if (currentProductId && querySnapshot.docs[0].id === currentProductId) {
+                    return true;
+                }
+                return false; // Barcode exists on another product
+            }
+
+            function populateCategoryDatalist(products) {
+                const categoryOptions = document.getElementById('categoryOptions');
+                if (!categoryOptions) return;
+                const uniqueCategories = [...new Set(products.map(p => p.category).filter(Boolean))];
+                const existingOptions = new Set(Array.from(categoryOptions.options).map(opt => opt.value));
+                uniqueCategories.forEach(category => {
+                    if (!existingOptions.has(category)) {
+                        categoryOptions.insertAdjacentHTML('beforeend', `<option value="${category}">`);
+                    }
+                });
+            }
+
+            async function handleAddProduct(e) {
+                e.preventDefault();
+
+                const barcode = document.getElementById('sku').value.trim();
+                const isBarcodeUnique = await checkBarcodeUniqueness(barcode, editProductId);
+                const barcodeErrorDiv = document.getElementById('barcode-error');
+                if (!isBarcodeUnique) {
+                    barcodeErrorDiv.style.display = 'block';
+                    document.getElementById('sku').classList.add('is-invalid');
+                    return;
+                }
+
+                const selectedUnit = document.getElementById('unit').value;
+                let priceTiers = {};
+
+                if (selectedUnit === 'Box') {
+                    priceTiers = {
+                        box: {
+                            buy: parseFloat(document.getElementById('buyPriceBox').value) || 0,
+                            wholesale: parseFloat(document.getElementById('wholesalePriceBoxNormal').value) || 0,
+                            shop_wholesale: parseFloat(document.getElementById('wholesalePriceBoxShop').value) || 0,
+                            // wholesale_normal_shop is an inconsistent field, not saving it with a standard key.
+                            sell: parseFloat(document.getElementById('sellPriceBoxNormal').value) || 0,
+                            shop_sell: parseFloat(document.getElementById('sellPriceBoxShop').value) || 0,
+                        },
+                        pack: {
+                            buy: parseFloat(document.getElementById('buyPricePack').value) || 0,
+                            wholesale: parseFloat(document.getElementById('wholesalePricePackNormal').value) || 0,
+                            shop_wholesale: parseFloat(document.getElementById('wholesalePricePackShop').value) || 0,
+                        },
+                        pcs: {
+                            buy: parseFloat(document.getElementById('buyPricePcs').value) || 0,
+                            sell: parseFloat(document.getElementById('sellPricePcsNormal').value) || 0,
+                            shop_sell: parseFloat(document.getElementById('sellPricePcsShop').value) || 0,
+                        }
+                    };
+                } else if (selectedUnit === 'Kg') {
+                    priceTiers = {
+                        kg: {
+                            buy: parseFloat(document.getElementById('buyPriceKg').value) || 0,
+                            wholesale: parseFloat(document.getElementById('wholesalePriceKgNormal').value) || 0,
+                            shop_wholesale: parseFloat(document.getElementById('wholesalePriceKgShop').value) || 0,
+                            sell: parseFloat(document.getElementById('sellPriceKgNormal').value) || 0,
+                            shop_sell: parseFloat(document.getElementById('sellPriceKgShop').value) || 0,
+                        },
+                        gram: {
+                            buy: parseFloat(document.getElementById('buyPriceGram').value) || 0,
+                            wholesale: parseFloat(document.getElementById('wholesalePriceGramNormal').value) || 0,
+                            shop_wholesale: parseFloat(document.getElementById('wholesalePriceGramShop').value) || 0,
+                            sell: parseFloat(document.getElementById('sellPriceGramNormal').value) || 0,
+                            shop_sell: parseFloat(document.getElementById('sellPriceGramShop').value) || 0,
+                        }
+                    };
+                } else if (selectedUnit === 'Liter') {
+                    priceTiers = {
+                        liter: {
+                            buy: parseFloat(document.getElementById('buyPriceLiter').value) || 0,
+                            wholesale: parseFloat(document.getElementById('wholesalePriceLiterNormal').value) || 0,
+                            shop_wholesale: parseFloat(document.getElementById('wholesalePriceLiterShop').value) || 0,
+                            sell: parseFloat(document.getElementById('sellPriceLiterNormal').value) || 0,
+                            shop_sell: parseFloat(document.getElementById('sellPriceLiterShop').value) || 0,
+                        },
+                        ml: {
+                            buy: parseFloat(document.getElementById('buyPriceMl').value) || 0,
+                            wholesale: parseFloat(document.getElementById('wholesalePriceMlNormal').value) || 0,
+                            shop_wholesale: parseFloat(document.getElementById('wholesalePriceMlShop').value) || 0,
+                            sell: parseFloat(document.getElementById('sellPriceMlNormal').value) || 0,
+                            shop_sell: parseFloat(document.getElementById('sellPriceMlShop').value) || 0,
+                        }
+                    };
+                } else if (selectedUnit === 'Packet') {
+                    priceTiers = {
+                        pack: {
+                            buy: parseFloat(document.getElementById('buyPricePacket').value) || 0,
+                            wholesale: parseFloat(document.getElementById('wholesalePricePacketNormal').value) || 0,
+                            shop_wholesale: parseFloat(document.getElementById('wholesalePricePacketShop').value) || 0,
+                            sell: parseFloat(document.getElementById('sellPricePacketNormal').value) || 0,
+                            shop_sell: parseFloat(document.getElementById('sellPricePacketShop').value) || 0,
+                        },
+                        pcs: {
+                            buy: parseFloat(document.getElementById('buyPricePacketPcs').value) || 0,
+                            wholesale: parseFloat(document.getElementById('wholesalePricePacketPcsNormal').value) || 0,
+                            shop_wholesale: parseFloat(document.getElementById('wholesalePricePacketPcsShop').value) || 0,
+                            sell: parseFloat(document.getElementById('sellPricePacketPcsNormal').value) || 0,
+                            shop_sell: parseFloat(document.getElementById('sellPricePacketPcsShop').value) || 0,
+                        }
+                    };
+                } else { 
+                    priceTiers = {
+                        pcs: {
+                            buy: parseFloat(document.getElementById('buyPrice').value) || 0,
+                            wholesale: parseFloat(document.getElementById('wholesalePriceNormal').value) || 0,
+                            shop_wholesale: parseFloat(document.getElementById('wholesalePriceShop').value) || 0,
+                            sell: parseFloat(document.getElementById('sellPriceNormal').value) || 0,
+                            shop_sell: parseFloat(document.getElementById('sellPriceShop').value) || 0,
+                        }
+                    }
+                }
+
+                const productData = {
+                    name: document.getElementById('productName').value.trim(),
+                    barcode: document.getElementById('sku').value.trim(),
+                    barcodeType: document.getElementById('barcodeType').value,
+                    unit: document.getElementById('unit').value,
+                    brand: document.getElementById('brand').value.trim(),
+                    category: document.getElementById('category').value,
+                    alertQuantity: parseInt(document.getElementById('alertQuantity').value, 10) || 0,
+                    imageUrl: document.getElementById('productImageUrl').value.trim() || null,
+                    priceTiers: priceTiers,
+                    description: document.getElementById('description').value.trim(),
+                    packetPerBox: document.getElementById('packetPerBox').value ? parseInt(document.getElementById('packetPerBox').value, 10) : null,
+                    pcsPerBox: document.getElementById('pcsPerBox').value ? parseInt(document.getElementById('pcsPerBox').value, 10) : null,
+                    pcsPerPacket: document.getElementById('pcsPerPacket').value ? parseInt(document.getElementById('pcsPerPacket').value, 10) : null,
+                };
+
+                if (editProductId) {
+                    try {
+                        const productRef = doc(db, "products", editProductId);
+                        await updateDoc(productRef, { ...productData, updatedAt: serverTimestamp() });
+                        alert(`Product "${productData.name}" updated successfully!`);
+                        localStorage.removeItem('editProductId');
+                        window.location.href = 'web.html';
+                    } catch (error) {
+                        console.error("Error updating document: ", error);
+                        alert("Failed to update product. See console for details.");
+                    }
+                } else {
+                    try {
+                        const newProduct = { ...productData, quantity: 0, createdAt: serverTimestamp() };
+                        const newDocRef = await addDoc(collection(db, "products"), newProduct);
+                        alert(`Product "${newProduct.name}" added successfully!`);
+
+                        if (e.submitter?.id === 'saveProductBtn') {
+                            window.location.href = 'web.html';
+                        } else if (e.submitter?.id === 'saveAndGoToPurchaseBtn') {
+                            localStorage.setItem('newlyAddedProductId', newDocRef.id);
+                            window.location.href = 'purchase.html';
+                        } else {
+                            addProductForm.reset();
+                            unitSelect.dispatchEvent(new Event('change'));
+                            document.getElementById('productName').focus();
+                        }
+                    } catch (error) {
+                        console.error("Error adding document: ", error);
+                        alert("Failed to add product. See console for details.");
+                    }
+                }
+            }
+
+            function setupSharedLogic() {
+                document.getElementById('welcomeMessage').textContent = `Welcome, ${currentUser.name.split(' ')[0]}`;
+                document.getElementById('logoutButton').addEventListener('click', () => {
+                    sessionStorage.clear();
+                    window.location.href = 'signin.html';
+                });
+                if (hasPermission('manage_employees')) {
+                    document.getElementById('employee-nav-item').style.display = 'flex';
+                }
+                function setupUI() {
+                    const navItems = {
+                        'dashboard': { el: document.querySelector('a[href="dashboard.html"]')?.closest('.nav-item'), perm: 'dashboard' },
+                        'products': { el: document.querySelector('a[href="#productSubmenu"]')?.closest('.nav-item'), perm: 'products' },
+                        'purchase': { el: document.querySelector('a[href="#purchaseSubmenu"]')?.closest('.nav-item'), perm: 'purchase' },
+                        'sales': { el: document.querySelector('a[href="#salesSubmenu"]')?.closest('.nav-item'), perm: 'sales' },
+                        'people': { el: document.querySelector('a[href="#peopleSubmenu"]')?.closest('.nav-item'), perm: 'people' },
+                        'employee': { el: document.getElementById('employee-nav-item'), perm: 'manage_employees' },
+                        'account': { el: document.querySelector('a[href="account.html"]')?.closest('.nav-item'), perm: null }, // Always visible
+                        'pos': { el: document.querySelector('a[href="pos.html"]'), perm: 'pos' }
+                    };
+
+                    for (const key in navItems) {
+                        const item = navItems[key];
+                        if (item.el && item.perm && !hasPermission(currentUser, item.perm)) {
+                            item.el.style.display = 'none';
+                        }
+                    }
+                    if (user.role === 'employee') {
+                        const employeeNavItem = document.getElementById('employee-nav-item');
+                        if (employeeNavItem) employeeNavItem.style.display = 'none';
+                    }
+                }
+                if (hasPermission(currentUser, 'manage_employees')) {
+                    document.getElementById('employee-nav-item').style.display = 'flex';
+                }
+                const themeSwitcher = document.getElementById('theme-switcher');
+                const htmlEl = document.documentElement;
+                const applyTheme = (theme) => htmlEl.setAttribute('data-bs-theme', theme);
+                const updateSwitcherUI = (theme) => {
+                    const thumb = themeSwitcher.querySelector('.slider-thumb');
+                    const sunIcon = themeSwitcher.querySelector('.sun');
+                    const moonIcon = themeSwitcher.querySelector('.moon');
+                    thumb.style.transform = theme === 'dark' ? 'translateX(30px)' : 'translateX(0px)';
+                    if (sunIcon) sunIcon.style.display = theme === 'dark' ? 'block' : 'none';
+                    if (moonIcon) moonIcon.style.display = theme === 'dark' ? 'none' : 'block';
+                };
+                const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                applyTheme(savedTheme);
+                updateSwitcherUI(savedTheme);
+                themeSwitcher.addEventListener('click', () => {
+                    const newTheme = htmlEl.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                    applyTheme(newTheme);
+                    updateSwitcherUI(newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            }
+
+            document.getElementById('sku').addEventListener('input', async function() {
+                const barcode = this.value.trim();
+                const isUnique = await checkBarcodeUniqueness(barcode, editProductId);
+                const barcodeErrorDiv = document.getElementById('barcode-error');
+                this.classList.toggle('is-invalid', !isUnique);
+                barcodeErrorDiv.style.display = isUnique ? 'none' : 'block';
+            });
+
+
+            async function populateFormForEdit() {
+                if (!editProductId) return;
+                const productRef = doc(db, "products", editProductId);
+                const productSnap = await getDoc(productRef);
+
+                if (!productSnap.exists()) {
+                    alert('Product to edit not found. Returning to list.');
+                    localStorage.removeItem('editProductId');
+                    window.location.href = 'web.html';
+                    return;
+                }
+                const productToEdit = productSnap.data();
+                document.querySelector('.main-content h1').textContent = 'Edit Product';
+                document.getElementById('saveProductBtn').textContent = 'Save Changes';
+                document.getElementById('saveAndAddAnotherBtn').style.display = 'none';
+                document.getElementById('cancelEditBtn').style.display = 'inline-block';
+
+                document.getElementById('productName').value = productToEdit.name;
+                document.getElementById('sku').value = productToEdit.barcode;
+                document.getElementById('barcodeType').value = productToEdit.barcodeType;
+                document.getElementById('unit').value = productToEdit.unit;
+                document.getElementById('brand').value = productToEdit.brand;
+                document.getElementById('category').value = productToEdit.category;
+                document.getElementById('alertQuantity').value = productToEdit.alertQuantity;
+                document.getElementById('productImageUrl').value = productToEdit.imageUrl || '';
+                document.getElementById('description').value = productToEdit.description || '';
+
+                unitSelect.dispatchEvent(new Event('change'));
+                const unit = productToEdit.unit;
+
+                const getPrice = (tierData, key, legacyKey) => {
+                    if (tierData && tierData[key] !== undefined) return tierData[key];
+                    if (tierData && legacyKey && tierData[legacyKey] !== undefined) return tierData[legacyKey];
+                    return 0;
+                };
+
+                if (unit === 'Box') {
+                    document.getElementById('packetPerBox').value = productToEdit.packetPerBox || '';
+                    document.getElementById('pcsPerBox').value = productToEdit.pcsPerBox || '';
+                    if (productToEdit.priceTiers) {
+                        const boxTiers = productToEdit.priceTiers.box || {};
+                        const packTiers = productToEdit.priceTiers.pack || {};
+                        const pcsTiers = productToEdit.priceTiers.pcs || {};
+                        // Box Prices
+                        document.getElementById('buyPriceBox').value = boxTiers.buy ?? 0;
+                        document.getElementById('wholesalePriceBoxNormal').value = getPrice(boxTiers, 'wholesale', 'wholesale_normal');
+                        document.getElementById('wholesalePriceBoxShop').value = getPrice(boxTiers, 'shop_wholesale', 'wholesale_shop');
+                        document.getElementById('sellPriceBoxNormal').value = getPrice(boxTiers, 'sell', 'sale_normal');
+                        document.getElementById('sellPriceBoxShop').value = getPrice(boxTiers, 'shop_sell', 'sale_shop');
+                        // Pack Prices
+                        document.getElementById('buyPricePack').value = packTiers.buy ?? 0;
+                        document.getElementById('wholesalePricePackNormal').value = getPrice(packTiers, 'wholesale', 'wholesale_normal');
+                        document.getElementById('wholesalePricePackShop').value = getPrice(packTiers, 'shop_wholesale', 'wholesale_shop');
+                        // PCS Prices
+                        document.getElementById('buyPricePcs').value = pcsTiers.buy ?? 0;
+                        document.getElementById('sellPricePcsNormal').value = getPrice(pcsTiers, 'sell', 'sale_normal');
+                        document.getElementById('sellPricePcsShop').value = getPrice(pcsTiers, 'shop_sell', 'sale_shop');
+                    }
+                } else if (unit === 'Kg' && productToEdit.priceTiers) {
+                    const kgTiers = productToEdit.priceTiers.kg || {};
+                    const gramTiers = productToEdit.priceTiers.gram || {};
+                    // Kg Prices
+                    document.getElementById('buyPriceKg').value = kgTiers.buy ?? 0;
+                    document.getElementById('wholesalePriceKgNormal').value = getPrice(kgTiers, 'wholesale', 'wholesale_normal');
+                    document.getElementById('wholesalePriceKgShop').value = getPrice(kgTiers, 'shop_wholesale', 'wholesale_shop');
+                    document.getElementById('sellPriceKgNormal').value = getPrice(kgTiers, 'sell', 'sale_normal');
+                    document.getElementById('sellPriceKgShop').value = getPrice(kgTiers, 'shop_sell', 'sale_shop');
+                    // Gram Prices
+                    document.getElementById('buyPriceGram').value = gramTiers.buy ?? 0;
+                    document.getElementById('wholesalePriceGramNormal').value = getPrice(gramTiers, 'wholesale', 'wholesale_normal');
+                    document.getElementById('wholesalePriceGramShop').value = getPrice(gramTiers, 'shop_wholesale', 'wholesale_shop');
+                    document.getElementById('sellPriceGramNormal').value = getPrice(gramTiers, 'sell', 'sale_normal');
+                    document.getElementById('sellPriceGramShop').value = getPrice(gramTiers, 'shop_sell', 'sale_shop');
+                } else if (unit === 'Liter' && productToEdit.priceTiers) {
+                    const literTiers = productToEdit.priceTiers.liter || {};
+                    const mlTiers = productToEdit.priceTiers.ml || {};
+                    // Liter Prices
+                    document.getElementById('buyPriceLiter').value = literTiers.buy ?? 0;
+                    document.getElementById('wholesalePriceLiterNormal').value = getPrice(literTiers, 'wholesale', 'wholesale_normal');
+                    document.getElementById('wholesalePriceLiterShop').value = getPrice(literTiers, 'shop_wholesale', 'wholesale_shop');
+                    document.getElementById('sellPriceLiterNormal').value = getPrice(literTiers, 'sell', 'sale_normal');
+                    document.getElementById('sellPriceLiterShop').value = getPrice(literTiers, 'shop_sell', 'sale_shop');
+                    // ML Prices
+                    document.getElementById('buyPriceMl').value = mlTiers.buy ?? 0;
+                    document.getElementById('wholesalePriceMlNormal').value = getPrice(mlTiers, 'wholesale', 'wholesale_normal');
+                    document.getElementById('wholesalePriceMlShop').value = getPrice(mlTiers, 'shop_wholesale', 'wholesale_shop');
+                    document.getElementById('sellPriceMlNormal').value = getPrice(mlTiers, 'sell', 'sale_normal');
+                    document.getElementById('sellPriceMlShop').value = getPrice(mlTiers, 'shop_sell', 'sale_shop');
+                } else if (unit === 'Packet' && productToEdit.priceTiers) {
+                    const packTiers = productToEdit.priceTiers.pack || {};
+                    const pcsTiers = productToEdit.priceTiers.pcs || {};
+                    // Packet Prices
+                    document.getElementById('buyPricePacket').value = packTiers.buy ?? 0;
+                    document.getElementById('wholesalePricePacketNormal').value = getPrice(packTiers, 'wholesale', 'wholesale_normal');
+                    document.getElementById('wholesalePricePacketShop').value = getPrice(packTiers, 'shop_wholesale', 'wholesale_shop');
+                    document.getElementById('sellPricePacketNormal').value = getPrice(packTiers, 'sell', 'sale_normal');
+                    document.getElementById('sellPricePacketShop').value = getPrice(packTiers, 'shop_sell', 'sale_shop');
+                    // PCS Prices (within Packet)
+                    document.getElementById('buyPricePacketPcs').value = pcsTiers.buy ?? 0;
+                    document.getElementById('wholesalePricePacketPcsNormal').value = getPrice(pcsTiers, 'wholesale', 'wholesale_normal');
+                    document.getElementById('wholesalePricePacketPcsShop').value = getPrice(pcsTiers, 'shop_wholesale', 'wholesale_shop');
+                    document.getElementById('sellPricePacketPcsNormal').value = getPrice(pcsTiers, 'sell', 'sale_normal');
+                    document.getElementById('sellPricePacketPcsShop').value = getPrice(pcsTiers, 'shop_sell', 'sale_shop');
+                } else {
+                    // Standard PCS pricing
+                    if (productToEdit.priceTiers?.pcs) {
+                        const pcsTiers = productToEdit.priceTiers.pcs;
+                        document.getElementById('buyPrice').value = pcsTiers.buy ?? 0;
+                        document.getElementById('wholesalePriceNormal').value = getPrice(pcsTiers, 'wholesale', 'wholesale_normal');
+                        document.getElementById('wholesalePriceShop').value = getPrice(pcsTiers, 'shop_wholesale', 'wholesale_shop');
+                        document.getElementById('sellPriceNormal').value = getPrice(pcsTiers, 'sell', 'sale_normal');
+                        document.getElementById('sellPriceShop').value = getPrice(pcsTiers, 'shop_sell', 'sale_shop');
+                    }
+                }
+            }
+
+            async function init() {
+                const sessionUserId = sessionStorage.getItem('loggedInUserId');
+                if (sessionUserId) {
+                    try {
+                        const userDocRef = doc(db, "users", sessionUserId);
+                        const userDocSnap = await getDoc(userDocRef);
+                        if (userDocSnap.exists()) {
+                            currentUser = { id: userDocSnap.id, ...userDocSnap.data() };
+
+                            editProductId = localStorage.getItem('editProductId');
+                            if (editProductId) { 
+                                if (!hasPermission('all_product_edit')) {
+                                    alert('Access Denied. You do not have permission to edit products.');
+                                    window.location.href = 'web.html';
+                                    return;
+                                }
+                            } else {
+                                if (!hasPermission('add_product')) {
+                                    alert('Access Denied. You do not have permission to add products.');
+                                    window.location.href = 'dashboard.html';
+                                    return;
+                                }
+                            }
+                        } else {
+                            throw new Error("User document not found.");
+                        }
+                    } catch (error) {
+                        console.error("Authentication check failed:", error);
+                        alert("Authentication error. Please sign in again.");
+                        window.location.href = 'signin.html';
+                        return;
+                    }
+                }
+
+                const productsSnapshot = await getDocs(collection(db, "products"));
+                allProducts = productsSnapshot.docs.map(doc => doc.data());
+                populateCategoryDatalist(allProducts);
+
+                await populateFormForEdit();
+                setupSharedLogic();
+                addProductForm.addEventListener('submit', handleAddProduct);
+                document.getElementById('sku').addEventListener('input', async function() {
+                    const barcode = this.value.trim();
+                    const isUnique = await checkBarcodeUniqueness(barcode, editProductId);
+                    const barcodeErrorDiv = document.getElementById('barcode-error');
+                    this.classList.toggle('is-invalid', !isUnique);
+                    barcodeErrorDiv.style.display = isUnique ? 'none' : 'block';
+                });
+
+                document.getElementById('cancelEditBtn').addEventListener('click', function () {
+                    if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
+                        localStorage.removeItem('editProductId');
+                        window.location.href = 'web.html';
+                    }
+                });
+
+                document.getElementById('generateBarcodeBtn').addEventListener('click', function() {
+                    const skuInput = document.getElementById('sku');
+                    let newBarcode;
+                    let isUnique = false;
+                    const existingBarcodes = allProducts.map(p => p.barcode).filter(Boolean);
+
+                    while (!isUnique) {
+                        newBarcode = Math.floor(10000000 + Math.random() * 90000000).toString();
+                        if (!existingBarcodes.includes(newBarcode)) {
+                            isUnique = true;
+                        }
+                    }
+                    skuInput.value = newBarcode;
+                });
+                unitSelect.addEventListener('change', function () {
+                    const boxFields = document.getElementById('boxFields');
+                    const boxPriceFields = document.getElementById('boxPriceFields');
+                    const standardPriceFields = document.getElementById('standardPriceFields');
+                    const kgPriceFields = document.getElementById('kgPriceFields');
+                    const literPriceFields = document.getElementById('literPriceFields'); // This was correct
+                    const packetFields = document.getElementById('packetFields');
+                    const packetPriceFields = document.getElementById('packetPriceFields');
+                    [boxFields, boxPriceFields, standardPriceFields, kgPriceFields, literPriceFields, packetFields, packetPriceFields].forEach(el => el.style.display = 'none');
+                    [...standardPriceFields.querySelectorAll('input'), ...boxPriceFields.querySelectorAll('input'), ...kgPriceFields.querySelectorAll('input'), ...literPriceFields.querySelectorAll('input'), ...packetPriceFields.querySelectorAll('input')].forEach(input => input.required = false);
+
+                    const selectedUnit = this.value;
+
+                    if (selectedUnit === 'Box') {
+                        boxFields.style.display = 'flex';
+                        boxPriceFields.style.display = 'flex';
+                        document.getElementById('buyPriceBox').required = true;
+                        document.getElementById('wholesalePriceBoxNormal').required = true;
+                        document.getElementById('wholesalePriceBoxShop').required = true;
+                        document.getElementById('sellPriceBoxNormal').required = true;
+                        document.getElementById('sellPriceBoxShop').required = true;
+                    } else if (selectedUnit === 'Kg') {
+                        kgPriceFields.style.display = 'flex';
+                        document.getElementById('buyPriceKg').required = true;
+                        document.getElementById('wholesalePriceKgNormal').required = true;
+                        document.getElementById('wholesalePriceKgShop').required = true;
+                        document.getElementById('sellPriceKgNormal').required = true;
+                        document.getElementById('sellPriceKgShop').required = true;
+                    } else if (selectedUnit === 'Liter') {
+                        literPriceFields.style.display = 'flex';
+                        document.getElementById('buyPriceLiter').required = true;
+                        document.getElementById('wholesalePriceLiterNormal').required = true;
+                        document.getElementById('wholesalePriceLiterShop').required = true;
+                        document.getElementById('sellPriceLiterNormal').required = true;
+                        document.getElementById('sellPriceLiterShop').required = true;
+                    } else if (selectedUnit === 'Packet') {
+                        packetFields.style.display = 'block';
+                        packetPriceFields.style.display = 'flex';
+                        document.getElementById('buyPricePacket').required = true;
+                        document.getElementById('wholesalePricePacketNormal').required = true;
+                        document.getElementById('wholesalePricePacketShop').required = true;
+                        document.getElementById('sellPricePacketNormal').required = true;
+                        document.getElementById('sellPricePacketShop').required = true;
+                    } else { // Pcs and others
+                        standardPriceFields.style.display = 'flex';
+                        // Set required for the new PCS fields
+                        document.getElementById('buyPrice').required = true;
+                        document.getElementById('wholesalePriceNormal').required = true;
+                        document.getElementById('wholesalePriceShop').required = true;
+                        document.getElementById('sellPriceNormal').required = true;
+                        document.getElementById('sellPriceShop').required = true;
+                    }
+                });
+            }
+
+            init();
+        });
+    </script>
+</body>
+
+</html>

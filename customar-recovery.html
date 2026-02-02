@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Recovery</title>
+    <link rel="icon" href="logo.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bs-primary-rgb: 99, 102, 241;
+            --bs-primary: #6366f1;
+            --bs-body-font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--bs-body-font-family);
+            background: radial-gradient(circle at top left, #1e1b4b, #312e81, #4338ca);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Decorative background shapes */
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            animation: float 10s infinite ease-in-out alternate;
+        }
+        .shape-1 {
+            top: -10%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: #4f46e5;
+            opacity: 0.4;
+        }
+        .shape-2 {
+            bottom: -10%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: #ec4899;
+            opacity: 0.3;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(30px, 50px); }
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 3rem 2.5rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            color: #fff;
+        }
+
+        .btn-primary {
+            background: #6366f1;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px rgba(79, 70, 229, 0.5);
+        }
+
+        .form-control {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .form-control:focus {
+            background: rgba(0, 0, 0, 0.3);
+            border-color: #6366f1;
+            color: #fff;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        }
+
+        .form-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            margin-left: 0.25rem;
+        }
+
+        .brand-logo {
+            width: 64px;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .brand-logo img {
+            width: 36px;
+            filter: brightness(0) invert(1);
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem;
+            z-index: 1000;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 576px) {
+            .login-card {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+
+    <div class="login-card">
+        <div class="brand-logo">
+            <img src="BC Logo2.png" alt="Logo">
+        </div>
+        <div class="text-center mb-4">
+            <h4 class="fw-bold mb-1">Account Recovery</h4>
+            <p class="text-muted small" id="stepDescription">Verify your phone number to reset credentials</p>
+        </div>
+
+        <!-- Step 1: Phone Verification -->
+        <form id="step1Form">
+            <div class="mb-3">
+                <label for="customerId" class="form-label">Customer ID</label>
+                <input type="text" class="form-control" id="customerId" placeholder="Enter your Customer ID" required autofocus>
+            </div>
+            <div id="recaptcha-container"></div>
+            <button type="submit" class="btn btn-primary" id="sendCodeBtn">Send Verification Code</button>
+        </form>
+
+        <!-- Step 2: OTP Verification -->
+        <form id="step2Form" style="display: none;">
+            <div class="mb-4">
+                <label for="otp" class="form-label">Verification Code</label>
+                <input type="text" class="form-control text-center" id="otp" placeholder="Enter 6-digit code" maxlength="6" required>
+                <div class="form-text text-white-50 text-center mt-2">Code sent to <span id="displayPhone"></span></div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="verifyBtn">Verify Code</button>
+        </form>
+
+        <!-- Step 3: Reset Credentials -->
+        <form id="step3Form" style="display: none;">
+            <div class="mb-3">
+                <label for="newPassword" class="form-label">New Password</label>
+                <input type="password" class="form-control" id="newPassword" placeholder="Enter new password" required>
+            </div>
+            <div class="mb-4">
+                <label for="newSecurityCode" class="form-label">New Security Code</label>
+                <input type="text" class="form-control" id="newSecurityCode" placeholder="Enter new security code" required>
+            </div>
+            <button type="submit" class="btn btn-primary" id="resetBtn">Update Credentials</button>
+        </form>
+
+        <div class="mt-4 text-center">
+            <a href="customar-login.html" class="text-decoration-none small" style="color: #a5b4fc;">Back to Login</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="text-center">
+            <span>Made with care in <strong>Bangladesh 🇧🇩 </strong>| <strong> Developed by</strong>: Indranil Saha | <strong> Version</strong>: 48.9.9 | <strong>Powered by</strong>: <a href="https://firebase.google.com/" target="_blank" class="text-decoration-none">Google Firebase.</a></span>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { getFirestore, collection, query, where, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+        import { app } from './firebase-init.js';
+
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        auth.languageCode = 'en';
+
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'invisible',
+            'callback': (response) => {}
+        });
+
+        function maskPhoneNumber(phone) {
+            if (!phone || phone.length < 8) return phone;
+            const visibleStart = 6; 
+            const visibleEnd = 3;
+            return `${phone.substring(0, visibleStart)}${'*'.repeat(Math.max(0, phone.length - visibleStart - visibleEnd))}${phone.substring(phone.length - visibleEnd)}`;
+        }
+
+        let confirmationResult = null;
+        let customerDocId = null;
+
+        document.getElementById('step1Form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const customerIdInput = document.getElementById('customerId').value.trim();
+            const btn = document.getElementById('sendCodeBtn');
+            btn.disabled = true; btn.textContent = "Sending...";
+
+            try {
+                let foundCustomer = null;
+                let customerData = null;
+
+                // Try finding by Doc ID first
+                const docRef = doc(db, "customers", customerIdInput);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    foundCustomer = docSnap;
+                    customerData = docSnap.data();
+                } else {
+                    // Try finding by displayId
+                    const q = query(collection(db, "customers"), where("displayId", "==", customerIdInput));
+                    const snapshot = await getDocs(q);
+                    if (!snapshot.empty) {
+                        foundCustomer = snapshot.docs[0];
+                        customerData = foundCustomer.data();
+                    }
+                }
+
+                if (foundCustomer && customerData && customerData.phone) {
+                    customerDocId = foundCustomer.id;
+                    let phone = customerData.phone;
+                    if (!phone.startsWith('+')) {
+                        phone = '+' + phone;
+                    }
+                    
+                    const appVerifier = window.recaptchaVerifier;
+                    signInWithPhoneNumber(auth, phone, appVerifier)
+                        .then((result) => {
+                            confirmationResult = result;
+                            const maskedPhone = maskPhoneNumber(phone);
+                            document.getElementById('displayPhone').textContent = maskedPhone;
+                            document.getElementById('step1Form').style.display = 'none';
+                            document.getElementById('step2Form').style.display = 'block';
+                            document.getElementById('stepDescription').textContent = `Enter the code sent to ${maskedPhone}`;
+                        }).catch((error) => {
+                            console.error("SMS Error:", error);
+                            alert("Failed to send verification code: " + error.message);
+                            btn.disabled = false; btn.textContent = "Send Verification Code";
+                            window.recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
+                        });
+                } else {
+                    alert("Customer ID not found or no phone number associated.");
+                    btn.disabled = false; btn.textContent = "Send Verification Code";
+                }
+            } catch (error) {
+                console.error("Error verifying user:", error);
+                alert("An error occurred. Please try again.");
+                btn.disabled = false; btn.textContent = "Send Verification Code";
+            }
+        });
+
+        document.getElementById('step2Form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const enteredOtp = document.getElementById('otp').value.trim();
+            const btn = document.getElementById('verifyBtn');
+            btn.disabled = true; btn.textContent = "Verifying...";
+
+            if (confirmationResult) {
+                confirmationResult.confirm(enteredOtp).then((result) => {
+                    document.getElementById('step2Form').style.display = 'none';
+                    document.getElementById('step3Form').style.display = 'block';
+                    document.getElementById('stepDescription').textContent = "Set your new credentials";
+                }).catch((error) => {
+                    alert("Invalid verification code. Please try again.");
+                    btn.disabled = false; btn.textContent = "Verify Code";
+                });
+            }
+        });
+
+        document.getElementById('step3Form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPassword = document.getElementById('newPassword').value;
+            const newCode = document.getElementById('newSecurityCode').value;
+            const btn = document.getElementById('resetBtn');
+            btn.disabled = true; btn.textContent = "Updating...";
+
+            try {
+                await updateDoc(doc(db, "customers", customerDocId), {
+                    password: newPassword,
+                    code: newCode
+                });
+                alert("Credentials updated successfully! Please login.");
+                window.location.href = 'customar-login.html';
+            } catch (error) {
+                console.error("Error updating credentials:", error);
+                alert("An error occurred. Please try again.");
+                btn.disabled = false; btn.textContent = "Update Credentials";
+            }
+        });
+    </script>
+</body>
+</html>

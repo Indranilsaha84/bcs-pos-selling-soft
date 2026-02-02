@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Login</title>
+    <link rel="icon" href="logo.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bs-primary-rgb: 99, 102, 241;
+            --bs-primary: #6366f1;
+            --bs-body-font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--bs-body-font-family);
+            background: radial-gradient(circle at top left, #1e1b4b, #312e81, #4338ca);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Decorative background shapes */
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            animation: float 10s infinite ease-in-out alternate;
+        }
+        .shape-1 {
+            top: -10%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: #4f46e5;
+            opacity: 0.4;
+        }
+        .shape-2 {
+            bottom: -10%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: #ec4899;
+            opacity: 0.3;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(30px, 50px); }
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 3rem 2.5rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            color: #fff;
+        }
+
+        .btn-primary {
+            background: #6366f1;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px rgba(79, 70, 229, 0.5);
+        }
+
+        .form-control {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .form-control:focus {
+            background: rgba(0, 0, 0, 0.3);
+            border-color: #6366f1;
+            color: #fff;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        }
+
+        .form-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            margin-left: 0.25rem;
+        }
+
+        .text-muted {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+
+        .brand-logo {
+            width: 64px;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .brand-logo img {
+            width: 36px;
+            filter: brightness(0) invert(1);
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem;
+            z-index: 1000;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 576px) {
+            .login-card {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+
+    <div class="login-card">
+        <div class="brand-logo">
+            <img src="BC Logo2.png" alt="Logo">
+        </div>
+        <div class="text-center mb-4">
+            <h4 class="fw-bold mb-1">Welcome Back</h4>
+            <p class="text-muted small">Sign in to your customer portal</p>
+        </div>
+
+        <form id="customerLoginForm">
+            <div class="mb-3">
+                <label for="identifier" class="form-label">Your ID</label>
+                <input type="text" class="form-control" id="identifier" placeholder="Enter your ID" required autofocus>
+            </div>
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label for="password" class="form-label mb-0">Password</label>
+                    <a href="customar-recovery.html" class="text-decoration-none small" style="color: #a5b4fc;">Forgot?</a>
+                </div>
+                <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
+            </div>
+            <div class="mb-4">
+                <label for="code" class="form-label">Security Code</label>
+                <input type="text" class="form-control" id="code" placeholder="Enter your security code" required>
+            </div>
+            <div class="d-grid gap-2 mb-4">
+                <button type="submit" class="btn btn-primary" id="loginBtn">
+                    <span id="btnText">Sign In</span>
+                    <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                </button>
+            </div>
+        </form>
+
+        <div class="mt-4 text-center">
+            <p class="text-muted mb-0 small">Don't have an account? <a href="#" class="text-decoration-none fw-semibold" style="color: #fff;">Contact on our shop. for detail to get an messsage on whatsapp on this number : +880 1714-637798</a></p>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1050"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="text-center">
+            <span>Made with care in <strong>Bangladesh 🇧🇩 </strong>| <strong> Developed by</strong>: Indranil Saha | <strong> Version</strong>: 48.9.9 | <strong>Powered by</strong>: <a href="https://firebase.google.com/" target="_blank" class="text-decoration-none">Google Firebase.</a></span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+        import { app } from './firebase-init.js';
+
+        const db = getFirestore(app);
+        const loginForm = document.getElementById('customerLoginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
+
+        // Apply saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+
+        function showAlert(message, type = 'danger') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show shadow-sm`;
+            alert.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
+            alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 4000);
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const identifier = document.getElementById('identifier').value.trim();
+            const password = document.getElementById('password').value;
+            const code = document.getElementById('code').value.trim();
+
+            loginBtn.disabled = true;
+            btnText.classList.add('d-none');
+            btnSpinner.classList.remove('d-none');
+
+            try {
+                // Try finding customer by Phone AND Password AND Code
+                let q = query(collection(db, "customers"), where("phone", "==", identifier), where("password", "==", password), where("code", "==", code));
+                let snapshot = await getDocs(q);
+
+                // If not found, try finding by Email AND Password AND Code
+                if (snapshot.empty) {
+                    q = query(collection(db, "customers"), where("email", "==", identifier), where("password", "==", password), where("code", "==", code));
+                    snapshot = await getDocs(q);
+                }
+
+                // If not found, try finding by displayId (Customer ID) AND Password AND Code
+                if (snapshot.empty) {
+                    q = query(collection(db, "customers"), where("displayId", "==", identifier), where("password", "==", password), where("code", "==", code));
+                    snapshot = await getDocs(q);
+                }
+
+                if (!snapshot.empty) {
+                    const customerDoc = snapshot.docs[0];
+                    const customerData = customerDoc.data();
+
+                    // Set session for customer
+                    sessionStorage.setItem('isAuthenticated', 'true');
+                    sessionStorage.setItem('userType', 'customer');
+                    sessionStorage.setItem('loggedInCustomerId', customerDoc.id);
+                    sessionStorage.setItem('loggedInCustomerName', customerData.name);
+
+                    showAlert('Login successful! Redirecting...', 'success');
+                    
+                    // Redirect to a customer dashboard or home page
+                    // Note: You may need to create 'customer-dashboard.html' or redirect to 'web.html'
+                    setTimeout(() => {
+                        window.location.href = 'customar-portal.html'; 
+                    }, 1000);
+                } else {
+                    showAlert('Invalid ID or password.');
+                    loginBtn.disabled = false;
+                    btnText.classList.remove('d-none');
+                    btnSpinner.classList.add('d-none');
+                }
+            } catch (error) {
+                console.error("Login Error:", error);
+                showAlert('An error occurred. Please try again.');
+                loginBtn.disabled = false;
+                btnText.classList.remove('d-none');
+                btnSpinner.classList.add('d-none');
+            }
+        });
+    </script>
+</body>
+</html>

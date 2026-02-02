@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cart - Customer Portal</title>
+    <link rel="icon" href="logo.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAPMvY4BHhhXDYQ9IJndZUlg4swWwLUuOo&libraries=places,marker&loading=async&callback=initMap" async defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bs-primary-rgb: 99, 102, 241;
+            --bs-primary: #6366f1;
+            --bs-body-font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--bs-body-font-family);
+            background-color: var(--bs-tertiary-bg);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .main-content {
+            padding-top: 20px;
+            flex-grow: 1;
+            padding-bottom: 40px;
+        }
+
+        .page-wrapper {
+            padding-top: 72px;
+            display: flex;
+            flex-grow: 1;
+        }
+
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            border-right: 1px solid var(--bs-border-color);
+            background-color: var(--bs-body-bg);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 1rem;
+            transition: transform 0.3s ease-in-out;
+            height: calc(100vh - 72px);
+            position: sticky;
+            top: 72px;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 767.98px) {
+            .sidebar {
+                position: fixed;
+                top: 72px;
+                left: 0;
+                bottom: 0;
+                height: calc(100vh - 72px);
+                z-index: 1040;
+                transform: translateX(-100%);
+                box-shadow: 4px 0 8px rgba(0,0,0,0.1);
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .sidebar-backdrop {
+                position: fixed;
+                top: 72px;
+                left: 0;
+                width: 100%;
+                height: calc(100vh - 72px);
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+                display: none;
+            }
+            .sidebar-backdrop.show {
+                display: block;
+            }
+            
+            /* Mobile Table Styles */
+            .table-responsive thead {
+                display: none;
+            }
+            .table-responsive tbody tr {
+                display: block;
+                margin-bottom: 1rem;
+                border: 1px solid var(--bs-border-color);
+                border-radius: 0.5rem;
+                padding: 1rem;
+                background-color: var(--bs-body-bg);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+            .table-responsive tbody td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.5rem 0;
+                border: none;
+                border-bottom: 1px solid var(--bs-border-color);
+            }
+            .table-responsive tbody td:last-child {
+                border-bottom: none;
+            }
+            .table-responsive tbody td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: var(--bs-secondary-color);
+                margin-right: auto;
+            }
+            .table-responsive .input-group { margin: 0 !important; }
+        }
+
+        .sidebar-item {
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--bs-body-color);
+            opacity: 0.8;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .sidebar-item:hover {
+            background-color: var(--bs-secondary-bg);
+            opacity: 1;
+        }
+
+        .sidebar-item.active {
+            background-color: var(--bs-primary-bg-subtle);
+            color: var(--bs-primary);
+            font-weight: 600;
+            opacity: 1;
+        }
+
+        .footer {
+            background-color: var(--bs-body-bg);
+            padding: 1rem;
+            border-top: 1px solid var(--bs-border-color);
+        }
+
+        [data-bs-theme="dark"] .footer {
+            background: linear-gradient(270deg, #1e1b4b 0%, #3730a3 100%);
+        }
+
+        [data-bs-theme="light"] .footer {
+            background: linear-gradient(270deg, #e0e7ff 0%, #eef2ff 100%);
+        }
+
+        .theme-switch-wrapper {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 1001;
+        }
+
+        /* Theme Switcher CSS */
+        .theme-switch {
+            --toggle-size: 12px;
+            --container-width: 5.625em;
+            --container-height: 2.5em;
+            --container-radius: 6.25em;
+            --container-light-bg: #3d7eae;
+            --container-night-bg: #1d1f2c;
+            --circle-container-diameter: 3.375em;
+            --sun-moon-diameter: 2.125em;
+            --sun-bg: #ecca2f;
+            --moon-bg: #c4c9d1;
+            --spot-color: #959db1;
+            --circle-container-offset: calc((var(--circle-container-diameter) - var(--container-height)) / 2 * -1);
+            --stars-color: #fff;
+            --clouds-color: #f3fdff;
+            --back-clouds-color: #aacadf;
+            --transition: 0.5s cubic-bezier(0, -0.02, 0.4, 1.25);
+            --circle-transition: 0.3s cubic-bezier(0, -0.02, 0.35, 1.17);
+        }
+
+        .theme-switch, .theme-switch *, .theme-switch *::before, .theme-switch *::after {
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-size: var(--toggle-size);
+        }
+
+        .theme-switch__container {
+            width: var(--container-width);
+            height: var(--container-height);
+            background-color: var(--container-light-bg);
+            border-radius: var(--container-radius);
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0em -0.062em 0.062em rgba(0, 0, 0, 0.25), 0em 0.062em 0.125em rgba(255, 255, 255, 0.94);
+            transition: var(--transition);
+            position: relative;
+            background-image: linear-gradient(to bottom, var(--container-light-bg) 0%, #5490c0 100%);
+        }
+
+        .theme-switch__container::before {
+            content: "";
+            position: absolute;
+            z-index: 1;
+            inset: 0;
+            box-shadow: 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset, 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset;
+            border-radius: var(--container-radius);
+        }
+
+        .theme-switch__checkbox { display: none; }
+
+        .theme-switch__circle-container {
+            width: var(--circle-container-diameter);
+            height: var(--circle-container-diameter);
+            background-color: rgba(255, 255, 255, 0.1);
+            position: absolute;
+            left: var(--circle-container-offset);
+            top: var(--circle-container-offset);
+            border-radius: var(--container-radius);
+            box-shadow: inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), 0 0 0 0.625em rgba(255, 255, 255, 0.1), 0 0 0 1.25em rgba(255, 255, 255, 0.1);
+            display: flex;
+            transition: var(--circle-transition);
+            pointer-events: none;
+        }
+
+        .theme-switch__sun-moon-container {
+            pointer-events: auto;
+            position: relative;
+            z-index: 2;
+            width: var(--sun-moon-diameter);
+            height: var(--sun-moon-diameter);
+            margin: auto;
+            border-radius: var(--container-radius);
+            background-color: var(--sun-bg);
+            box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #a1872a inset;
+            filter: drop-shadow(0.062em 0.125em 0.125em rgba(0, 0, 0, 0.25)) drop-shadow(0em 0.062em 0.125em rgba(0, 0, 0, 0.25));
+            overflow: hidden;
+            transition: var(--transition);
+            transform: scale(1);
+        }
+
+        .theme-switch__moon {
+            transform: translateX(100%);
+            width: 100%;
+            height: 100%;
+            background-color: var(--moon-bg);
+            border-radius: inherit;
+            box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #969696 inset;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .theme-switch__spot {
+            position: absolute;
+            top: 0.75em;
+            left: 0.312em;
+            width: 0.75em;
+            height: 0.75em;
+            border-radius: var(--container-radius);
+            background-color: var(--spot-color);
+            box-shadow: 0em 0.0312em 0.062em rgba(0, 0, 0, 0.25) inset;
+        }
+
+        .theme-switch__spot:nth-of-type(2) { width: 0.375em; height: 0.375em; top: 0.937em; left: 1.375em; }
+        .theme-switch__spot:nth-last-of-type(3) { width: 0.25em; height: 0.25em; top: 0.312em; left: 0.812em; }
+
+        .theme-switch__clouds {
+            width: 1.25em;
+            height: 1.25em;
+            background-color: var(--clouds-color);
+            border-radius: var(--container-radius);
+            position: absolute;
+            bottom: -0.625em;
+            left: 0.312em;
+            box-shadow: 0.937em 0.312em var(--clouds-color), -0.312em -0.312em var(--back-clouds-color), 1.437em 0.375em var(--clouds-color), 0.5em -0.125em var(--back-clouds-color), 2.187em 0 var(--clouds-color), 1.25em -0.062em var(--back-clouds-color), 2.937em 0.312em var(--clouds-color), 2em -0.312em var(--back-clouds-color), 3.625em -0.062em var(--clouds-color), 2.625em 0em var(--back-clouds-color), 4.5em -0.312em var(--clouds-color), 3.375em -0.437em var(--back-clouds-color), 4.625em -1.75em 0 0.437em var(--clouds-color), 4em -0.625em var(--back-clouds-color), 4.125em -2.125em 0 0.437em var(--back-clouds-color);
+            transition: 0.5s cubic-bezier(0, -0.02, 0.4, 1.25);
+        }
+
+        .theme-switch__stars-container {
+            position: absolute;
+            color: var(--stars-color);
+            top: -100%;
+            left: 0.312em;
+            width: 2.75em;
+            height: auto;
+            transition: var(--transition);
+        }
+
+        .theme-switch__checkbox:checked + .theme-switch__container {
+            background-color: var(--container-night-bg);
+            background-image: linear-gradient(to bottom, var(--container-night-bg) 0%, #2d3142 100%);
+        }
+
+        .theme-switch__checkbox:checked + .theme-switch__container .theme-switch__circle-container {
+            left: calc(100% - var(--circle-container-offset) - var(--circle-container-diameter));
+        }
+
+        .theme-switch__checkbox:checked + .theme-switch__container .theme-switch__circle-container:hover {
+            left: calc(100% - var(--circle-container-offset) - var(--circle-container-diameter) - 0.187em);
+        }
+
+        .theme-switch__circle-container:hover { left: calc(var(--circle-container-offset) + 0.187em); }
+        .theme-switch__checkbox:checked + .theme-switch__container .theme-switch__moon { transform: translate(0); }
+        .theme-switch__checkbox:checked + .theme-switch__container .theme-switch__clouds { bottom: -4.062em; }
+        .theme-switch__checkbox:checked + .theme-switch__container .theme-switch__stars-container { top: 50%; transform: translateY(-50%); }
+    </style>
+</head>
+
+<body>
+    <script>
+        // Basic authentication check
+        if (sessionStorage.getItem('isAuthenticated') !== 'true' || sessionStorage.getItem('userType') !== 'customer') {
+            sessionStorage.clear();
+            window.location.href = 'customar-login.html';
+        }
+    </script>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+        <div class="container-fluid">
+            <button class="btn btn-link text-white me-2 d-md-none" id="sidebarToggle">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+                </svg>
+            </button>
+            <a class="navbar-brand" href="customar-portal.html">Customer Portal</a>
+            <div>
+                <span id="welcomeMessage" class="navbar-text text-white me-3"></span>
+                <button id="logoutButton" class="btn btn-danger" title="Logout">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-wrapper">
+        <main class="main-content">
+            <div class="container px-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">My Cart</h1>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Cart Items</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th class="text-center d-none d-md-table-cell">Price</th>
+                                                <th class="text-center">Quantity</th>
+                                                <th class="text-end">Total</th>
+                                                <th class="text-end">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="cartTableBody">
+                                            <!-- Cart items will be injected here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div id="emptyCartMessage" class="text-center py-5 d-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-cart-x text-muted mb-3" viewBox="0 0 16 16">
+                                        <path d="M7.354 5.646a.5.5 0 1 0-.708.708L7.793 7.5 6.646 8.646a.5.5 0 1 0 .708.708L8.5 8.207l1.146 1.147a.5.5 0 0 0 .708-.708L9.207 7.5l1.147-1.146a.5.5 0 0 0-.708-.708L8.5 6.793 7.354 5.646z"/>
+                                        <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 4 0h3.5a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zm3.915 10L3.102 4h10.796l-1.313 7h-8.17zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                                    </svg>
+                                    <p class="text-muted">Your cart is empty.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Delivery Location</h5>
+                            </div>
+                            <div class="card-body">
+                                <label for="locationInput" class="form-label">Enter your address</label>
+                                <input type="text" id="locationInput" class="form-control mb-3"
+                                    placeholder="Start typing your address...">
+                                <div id="map" style="height: 200px; background-color: #e9ecef; border-radius: .5rem;">
+                                </div>
+                                <div class="alert alert-info mt-3 mb-0" role="alert">
+                                    The delivery charge will be added as the distance from the Store of Baroda Computure and Sales.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Order Summary</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Subtotal</span>
+                                    <span id="cartSubtotal">0.00 BDT</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span>Discount</span>
+                                    <span>0.00 BDT</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between mb-4">
+                                    <strong>Grand Total</strong>
+                                    <strong id="cartGrandTotal">0.00 BDT</strong>
+                                </div>
+                                <div class="d-grid">
+                                    <button id="checkoutBtn" class="btn btn-primary btn-lg">Confirm Purchase</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmationModalLabel">Confirm Your Order</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Please review your order details before confirming.</p>
+                    <div class="d-flex justify-content-between">
+                        <span>Subtotal:</span>
+                        <span id="modalSubtotal">0.00 BDT</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between fw-bold fs-5">
+                        <strong>Grand Total:</strong>
+                        <strong id="modalGrandTotal">0.00 BDT</strong>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmOrderBtn">Place Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="text-center">
+            <span>Made with care in <strong>Bangladesh 🇧🇩 </strong>| <strong> Developed by</strong>: Indranil Saha | <strong> Version</strong>: 48.9.9 | <strong>Powered by</strong>: <a href="https://firebase.google.com/" target="_blank" class="text-decoration-none">Google Firebase.</a></span>
+        </div>
+    </footer>
+
+    <!-- Theme Switcher -->
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch">
+            <input class="theme-switch__checkbox" type="checkbox" />
+            <div class="theme-switch__container">
+                <div class="theme-switch__clouds"></div>
+                <div class="theme-switch__stars-container">
+                    <svg fill="none" viewBox="0 0 144 55" xmlns="http://www.w3.org/2000/svg">
+                        <path fill="currentColor" d="M135.831 3.00688C135.055 3.85027 134.111 4.29946 133 4.35447C134.111 4.40947 135.055 4.85867 135.831 5.71123C136.607 6.55462 136.996 7.56303 136.996 8.72727C136.996 7.95722 137.172 7.25134 137.525 6.59129C137.886 5.93124 138.372 5.39954 138.98 5.00535C139.598 4.60199 140.268 4.39114 141 4.35447C139.88 4.2903 138.936 3.85027 138.16 3.00688C137.384 2.16348 136.996 1.16425 136.996 0C136.996 1.16425 136.607 2.16348 135.831 3.00688ZM31 23.3545C32.1114 23.2995 33.0551 22.8503 33.8313 22.0069C34.6075 21.1635 34.9956 20.1642 34.9956 19C34.9956 20.1642 35.3837 21.1635 36.1599 22.0069C36.9361 22.8503 37.8798 23.2903 39 23.3545C38.2679 23.3911 37.5976 23.602 36.9802 24.0053C36.3716 24.3995 35.8864 24.9312 35.5248 25.5913C35.172 26.2513 34.9956 26.9572 34.9956 27.7273C34.9956 26.563 34.6075 25.5546 33.8313 24.7112C33.0551 23.8587 32.1114 23.4095 31 23.3545ZM0 36.3545C1.11136 36.2995 2.05513 35.8503 2.83131 35.0069C3.6075 34.1635 3.99559 33.1642 3.99559 32C3.99559 33.1642 4.38368 34.1635 5.15987 35.0069C5.93605 35.8503 6.87982 36.2903 8 36.3545C7.26792 36.3911 6.59757 36.602 5.98015 37.0053C5.37155 37.3995 4.88644 37.9312 4.52481 38.5913C4.172 39.2513 3.99559 39.9572 3.99559 40.7273C3.99559 39.563 3.6075 38.5546 2.83131 37.7112C2.05513 36.8587 1.11136 36.4095 0 36.3545ZM56.8313 24.0069C56.0551 24.8503 55.1114 25.2995 54 25.3545C55.1114 25.4095 56.0551 25.8587 56.8313 26.7112C57.6075 27.5546 57.9956 28.563 57.9956 29.7273C57.9956 28.9572 58.172 28.2513 58.5248 27.5913C58.8864 26.9312 59.3716 26.3995 59.9802 26.0053C60.5976 25.602 61.2679 25.3911 62 25.3545C60.8798 25.2903 59.9361 24.8503 59.1599 24.0069C58.3837 23.1635 57.9956 22.1642 57.9956 21C57.9956 22.1642 57.6075 23.1635 56.8313 24.0069ZM81 25.3545C82.1114 25.2995 83.0551 24.8503 83.8313 24.0069C84.6075 23.1635 84.9956 22.1642 84.9956 21C84.9956 22.1642 85.3837 23.1635 86.1599 24.0069C86.9361 24.8503 87.8798 25.2903 89 25.3545C88.2679 25.3911 87.5976 25.602 86.9802 26.0053C86.3716 26.3995 85.8864 26.9312 85.5248 27.5913C85.172 28.2513 84.9956 28.9572 84.9956 29.7273C84.9956 28.563 84.6075 27.5546 83.8313 26.7112C83.0551 25.8587 82.1114 25.4095 81 25.3545ZM136 36.3545C137.111 36.2995 138.055 35.8503 138.831 35.0069C139.607 34.1635 139.996 33.1642 139.996 32C139.996 33.1642 140.384 34.1635 141.16 35.0069C141.936 35.8503 142.88 36.2903 144 36.3545C143.268 36.3911 142.598 36.602 141.98 37.0053C141.372 37.3995 140.886 37.9312 140.525 38.5913C140.172 39.2513 139.996 39.9572 139.996 40.7273C139.996 39.563 139.607 38.5546 138.831 37.7112C138.055 36.8587 137.111 36.4095 136 36.3545ZM101.831 49.0069C101.055 49.8503 100.111 50.2995 99 50.3545C100.111 50.4095 101.055 50.8587 101.831 51.7112C102.607 52.5546 102.996 53.563 102.996 54.7273C102.996 53.9572 103.172 53.2513 103.525 52.5913C103.886 51.9312 104.372 51.3995 104.98 51.0053C105.598 50.602 106.268 50.3911 107 50.3545C105.88 50.2903 104.936 49.8503 104.16 49.0069C103.384 48.1635 102.996 47.1642 102.996 46C102.996 47.1642 102.607 48.1635 101.831 49.0069Z" clip-rule="evenodd" fill-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="theme-switch__circle-container">
+                    <div class="theme-switch__sun-moon-container">
+                        <div class="theme-switch__moon">
+                            <div class="theme-switch__spot"></div>
+                            <div class="theme-switch__spot"></div>
+                            <div class="theme-switch__spot"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="theme-switch__shooting-star"></div>
+                <div class="theme-switch__shooting-star-2"></div>
+                <div class="theme-switch__meteor"></div>
+                <div class="theme-switch__stars-cluster">
+                    <div class="star"></div>
+                    <div class="star"></div>
+                    <div class="star"></div>
+                    <div class="star"></div>
+                    <div class="star"></div>
+                </div>
+                <div class="theme-switch__aurora"></div>
+                <div class="theme-switch__comets">
+                    <div class="comet"></div>
+                    <div class="comet"></div>
+                </div>
+            </div>
+        </label>
+    </div>
+
+    <script>
+
+        let map, marker, autocomplete;
+        window.selectedLocation = null;
+
+        async function initMap() {
+            const { Map } = await google.maps.importLibrary("maps");
+            const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+            const { Autocomplete } = await google.maps.importLibrary("places");
+
+            const dhaka = { lat: 23.8103, lng: 90.4125 };
+            map = new Map(document.getElementById("map"), {
+                center: dhaka,
+                zoom: 12,
+                mapId: "DEMO_MAP_ID",
+            });
+            marker = new AdvancedMarkerElement({
+                map: map,
+                position: dhaka,
+            });
+
+            const locationInput = document.getElementById("locationInput");
+            autocomplete = new Autocomplete(locationInput);
+            autocomplete.setFields(["address_components", "geometry", "icon", "name"]);
+
+            autocomplete.addListener("place_changed", () => {
+                marker.map = null;
+                const place = autocomplete.getPlace();
+
+                if (!place.geometry || !place.geometry.location) {
+                    window.alert("No details available for input: '" + place.name + "'");
+                    return;
+                }
+
+                if (place.geometry.viewport) {
+                    map.fitBounds(place.geometry.viewport);
+                } else {
+                    map.setCenter(place.geometry.location);
+                    map.setZoom(17);
+                }
+                marker.position = place.geometry.location;
+                marker.map = map;
+
+                window.selectedLocation = {
+                    address: locationInput.value, // Use the input's value for the full address
+                    lat: place.geometry.location.lat(),
+                    lng: place.geometry.location.lng()
+                };
+            });
+        }
+        window.initMap = initMap;
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+        import { app } from './firebase-init.js';
+        import { renderSidebar } from './sidebar.js';
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            renderSidebar('cart');
+            const db = getFirestore(app);
+
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', () => {
+                    document.querySelector('.sidebar').classList.toggle('show');
+                });
+            }
+            const customerId = sessionStorage.getItem('loggedInCustomerId');
+            let customerData = null;
+            
+            // Initialize Bootstrap Modal
+            const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+
+            if (!customerId) {
+                window.location.href = 'customar-login.html';
+                return;
+            }
+
+            // Fetch customer data for navbar and checkout
+            try {
+                const customerDocSnap = await getDoc(doc(db, "customers", customerId));
+                if (customerDocSnap.exists()) {
+                    customerData = { id: customerDocSnap.id, ...customerDocSnap.data() };
+                    document.getElementById('welcomeMessage').textContent = `Welcome, ${customerData.name.split(' ')[0]}`;
+                }
+            } catch (error) {
+                console.error("Error fetching customer data:", error);
+            }
+
+            // Cart Logic
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+            function renderCart() {
+                const tableBody = document.getElementById('cartTableBody');
+                const emptyMessage = document.getElementById('emptyCartMessage');
+                const checkoutBtn = document.getElementById('checkoutBtn');
+                
+                tableBody.innerHTML = '';
+                let subtotal = 0;
+
+                if (cart.length === 0) {
+                    tableBody.parentElement.classList.add('d-none');
+                    emptyMessage.classList.remove('d-none');
+                    checkoutBtn.disabled = true;
+                } else {
+                    tableBody.parentElement.classList.remove('d-none');
+                    emptyMessage.classList.add('d-none');
+                    checkoutBtn.disabled = false;
+
+                    cart.forEach((item, index) => {
+                        const total = item.price * item.quantity;
+                        subtotal += total;
+                        const row = `
+                            <tr>
+                                <td data-label="Product">
+                                    <a href="customar-product-details.html?id=${item.id}" class="fw-bold text-decoration-none text-body">${item.name}</a>
+                                    <div class="small text-muted">Barcode: ${item.barcode || 'N/A'}</div>
+                                </td>
+                                <td data-label="Price" class="text-center">${item.price.toFixed(2)}</td>
+                                <td data-label="Quantity" class="text-center">
+                                    <div class="input-group input-group-sm justify-content-center" style="max-width: 120px; margin: 0 auto;">
+                                        <button class="btn btn-outline-secondary btn-decrease" data-index="${index}">-</button>
+                                        <input type="text" class="form-control text-center px-1" value="${item.quantity}" readonly>
+                                        <button class="btn btn-outline-secondary btn-increase" data-index="${index}">+</button>
+                                    </div>
+                                </td>
+                                <td data-label="Total" class="text-end">${total.toFixed(2)}</td>
+                                <td data-label="Action" class="text-end">
+                                    <button class="btn btn-sm btn-outline-danger btn-remove" data-index="${index}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"/>
+                                            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z"/>
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                        tableBody.insertAdjacentHTML('beforeend', row);
+                    });
+                }
+
+                document.getElementById('cartSubtotal').textContent = `${subtotal.toFixed(2)} BDT`;
+                document.getElementById('cartGrandTotal').textContent = `${subtotal.toFixed(2)} BDT`;
+            }
+
+            renderCart();
+
+            // Event Delegation for Cart Actions
+            document.getElementById('cartTableBody').addEventListener('click', (e) => {
+                const target = e.target.closest('button');
+                if (!target) return;
+
+                const index = parseInt(target.dataset.index);
+
+                if (target.classList.contains('btn-increase')) {
+                    cart[index].quantity++;
+                } else if (target.classList.contains('btn-decrease')) {
+                    if (cart[index].quantity > 1) {
+                        cart[index].quantity--;
+                    }
+                } else if (target.classList.contains('btn-remove')) {
+                    cart.splice(index, 1);
+                }
+
+                localStorage.setItem('cart', JSON.stringify(cart));
+                renderCart();
+            });
+
+            // Checkout Logic
+            checkoutBtn.addEventListener('click', () => {
+                if (cart.length === 0) {
+                    alert("Your cart is empty.");
+                    return;
+                }
+                if (!customerData) {
+                    alert("Customer data not loaded. Please try again.");
+                    return;
+                }
+                if (!window.selectedLocation) {
+                    alert("Please select a delivery location from the map section.");
+                    return;
+                }
+
+                // Populate modal with current totals and show it
+                document.getElementById('modalSubtotal').textContent = document.getElementById('cartSubtotal').textContent;
+                document.getElementById('modalGrandTotal').textContent = document.getElementById('cartGrandTotal').textContent;
+                confirmationModal.show();
+            });
+
+            confirmOrderBtn.addEventListener('click', async () => {
+                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const discount = 0;
+                const totalAmount = subtotal - discount;
+
+                const saleData = {
+                    customer: {
+                        id: customerData.id, name: customerData.name,
+                        phone: customerData.phone || '', email: customerData.email || ''
+                    },
+                    items: cart,
+                    subtotal: subtotal, discount: discount, totalAmount: totalAmount,
+                    paidAmount: 0,
+                    dueAmount: totalAmount,
+                    paymentStatus: 'Pending',
+                    date: serverTimestamp(),
+                    location: window.selectedLocation,
+                    source: 'order' // Mark this as a customer order
+                };
+
+                try {
+                    const btn = confirmOrderBtn;
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Placing Order...';
+
+                    // Generate custom ID for order
+                    const salesSnapshot = await getDocs(collection(db, "sales"));
+                    const orderIds = salesSnapshot.docs
+                        .map(doc => doc.id)
+                        .filter(id => id.startsWith('ord-'))
+                        .map(id => parseInt(id.split('-')[1], 10)).filter(num => !isNaN(num));
+                    const maxId = orderIds.length > 0 ? Math.max(...orderIds) : 0;
+                    const newOrderId = `ord-${maxId + 1}`;
+
+                    await setDoc(doc(db, "sales", newOrderId), saleData);
+                    
+                    localStorage.removeItem('cart');
+                    cart = [];
+                    renderCart();
+
+                    confirmationModal.hide();
+                    alert("Order placed successfully!");
+                    window.location.href = 'customar-orders.html';
+                } catch (error) {
+                    console.error("Error placing order:", error);
+                    alert("Failed to place order. Please try again.");
+                } finally {
+                    const btn = confirmOrderBtn;
+                    btn.disabled = false;
+                    btn.innerHTML = 'Place Order';
+                }
+            });
+
+            document.getElementById('logoutButton').addEventListener('click', () => {
+                sessionStorage.clear();
+                window.location.href = 'customar-login.html';
+            });
+
+            // Theme Switcher Logic
+            const themeCheckbox = document.querySelector('.theme-switch__checkbox');
+            const htmlEl = document.documentElement;
+            const applyTheme = (theme) => {
+                htmlEl.setAttribute('data-bs-theme', theme);
+                themeCheckbox.checked = (theme === 'dark');
+            };
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            applyTheme(savedTheme);
+            themeCheckbox.addEventListener('change', () => {
+                const newTheme = themeCheckbox.checked ? 'dark' : 'light';
+                applyTheme(newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+        });
+    </script>
+</body>
+</html>

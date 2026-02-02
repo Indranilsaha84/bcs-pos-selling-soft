@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Center</title>
+    <link rel="icon" href="logo.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bs-primary-rgb: 99, 102, 241;
+            --bs-primary: #6366f1;
+            --bs-body-font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--bs-body-font-family);
+            background-color: var(--bs-tertiary-bg);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100%;
+            padding-top: 56px;
+            background-color: var(--bs-body-bg);
+            border-right: 1px solid var(--bs-border-color);
+            z-index: 1020;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            color: var(--bs-body-color);
+            padding: .75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: var(--bs-tertiary-bg);
+        }
+
+        .sidebar .nav-link.active {
+            color: var(--bs-primary);
+            font-weight: 600;
+            border-left-color: var(--bs-primary);
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding-top: 72px;
+            flex-grow: 1;
+            padding-bottom: 40px;
+        }
+        .theme-switch-wrapper {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 1001;
+        }
+
+        #theme-switcher {
+            background: none;
+            border: 1px solid var(--bs-border-color-translucent);
+            padding: 0;
+            cursor: pointer;
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: var(--bs-tertiary-bg);
+            border-radius: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer {
+            padding: 1rem;
+            border-top: 1px solid var(--bs-border-color);
+           border-top: 1px solid var(--bs-border-color);
+            margin-left: 240px;
+            background-color: var(--bs-tertiary-bg);
+        }
+
+        [data-bs-theme="dark"] .footer {
+            background: linear-gradient(270deg, #1e1b4b 0%, #3730a3 100%);
+        }
+
+        [data-bs-theme="light"] .footer {
+            background: linear-gradient(270deg, #e0e7ff 0%, #eef2ff 100%);
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        if (sessionStorage.getItem('isAuthenticated') !== 'true') {
+            window.location.href = 'signin.html';
+        }
+    </script>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.html" style="margin-left: 240px;">Baroda Computer And Sales</a>
+            <div>
+                <a href="pos.html" class="btn btn-warning me-2" title="Go to Point of Sale">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-cart-check-fill" viewBox="0 0 16 16">
+                        <path
+                            d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 4 0h3.5a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1.646-7.646-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708z" />
+                    </svg>
+                    POS
+                </a>
+                <span id="welcomeMessage" class="navbar-text text-white me-3"></span>
+                <button id="logoutButton" class="btn btn-danger" title="Logout from the application">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="sidebar">
+        <div class="p-3 text-center border-bottom">
+            <h5 class="mb-0">Navigation</h5>
+        </div>
+        <ul class="nav flex-column pt-2">
+            <li class="nav-item">
+                <a class="nav-link" href="dashboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#productSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="productSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <path d="M16 13H8"></path>
+                        <path d="M16 17H8"></path>
+                        <path d="M10 9H8"></path>
+                    </svg>
+                    Products
+                </a>
+                <div class="collapse" id="productSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="web.html">All Product</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="add-product.html">Add product</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>            
+            <li class="nav-item" id="print-label-nav-item">
+                <a class="nav-link" href="#printLabelSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="printLabelSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                        <rect x="6" y="14" width="12" height="8"></rect>
+                    </svg>
+                    Print Label
+                </a>
+                <div class="collapse" id="printLabelSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="barcode_generator.html">Barcode Generator</a>
+                            <li class="nav-item"><a class="nav-link sub-link" href="print-customar-card.html">Print Customer Card</a></li>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#purchaseSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="false" aria-controls="purchaseSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 10V7a5 5 0 0 1 10 0v3"></path>
+                        <path
+                            d="M17 10h-1a4 4 0 0 0-8 0H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Z">
+                        </path>
+                    </svg>
+                    Purchase
+                </a>
+                <div class="collapse" id="purchaseSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase.html">Add purchase</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-history.html">Purchase History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-return.html">Purchase Return</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-return-history.html">Purchase Return History</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#salesSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="salesSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bag-check" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M10.854 8.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                    <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1m3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/>
+                    </svg>
+                    Sales
+                </a>
+                <div class="collapse" id="salesSubmenu">
+                    
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="all-sale-history.html">All Sales History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="add-sale-history.html">Add Sales History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="pos-sales-history.html">POS Sales History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="add-sale.html">Add sale</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="order-sale-history.html">Order Sale History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="sell-return.html">Sell Return</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="sell-return-history.html">Sell Return
+                         History</a>
+                        </li>
+                        
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#peopleSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="peopleSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-users">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    People
+                </a>
+                <div class="collapse" id="peopleSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="customer.html">Customer List</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="supplier.html">Supplier List</a>
+                        </li>
+                         <li class="nav-item">
+                            <a class="nav-link sub-link" href="order.html">Order</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#reportsSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="reportsSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-bar-chart-2">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    Reports
+                </a>
+                <div class="collapse" id="reportsSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="profit-and-loss.html">Profit &
+                                Loss</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-report.html">Stock Report</a>
+                            
+                        </li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-adjust.html">Stock Adjust</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item" id="leaderboard-nav-item">
+                <a class="nav-link" href="leaderboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-award"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                    Leaderboard
+                </a>
+            </li>
+
+            <li class="nav-item" id="employee-nav-item" style="display: none;">
+                <a class="nav-link" href="employee.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Employee
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="account.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Account
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="container-fluid px-4">
+            <div
+                class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Account Center</h1>
+            </div>
+
+            <ul class="nav nav-pills mb-3" id="accountTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="profile-tab" data-bs-toggle="tab"
+                        data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane"
+                        aria-selected="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-person-lines-fill me-2" viewBox="0 0 16 16">
+                            <path
+                                d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zM11 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5zm.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1h-4zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2zm0 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2z" />
+                        </svg>
+                        Profile Information
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="security-tab" data-bs-toggle="tab"
+                        data-bs-target="#security-tab-pane" type="button" role="tab" aria-controls="security-tab-pane"
+                        aria-selected="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-shield-lock-fill me-2" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.465 9.99a11.777 11.777 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24c.304-.143.662-.352 1.048-.625a11.775 11.775 0 0 0 2.517-2.453c1.678-2.195 3.061-5.513 2.465-9.99a1.541 1.541 0 0 0-1.044-1.262c-.658-.215-1.777-.57-2.887-.87C9.843.266 8.69 0 8 0zm0 5a1.5 1.5 0 0 1 .5 2.915l.385 1.99a.5.5 0 0 1-.491.595h-.788a.5.5 0 0 1-.49-.595l.384-1.99A1.5 1.5 0 0 1 8 5z" />
+                        </svg>
+                        Security
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="profile-tab-pane" role="tabpanel"
+                    aria-labelledby="profile-tab" tabindex="0">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4">
+                            <form id="editProfileForm" class="needs-validation" novalidate>
+                                <div class="accordion" id="profileAccordion">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingPersonal">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#collapsePersonal" aria-expanded="true"
+                                                aria-controls="collapsePersonal">
+                                                Personal Information
+                                            </button>
+                                        </h2>
+                                        <div id="collapsePersonal" class="accordion-collapse collapse show"
+                                            aria-labelledby="headingPersonal" data-bs-parent="#profileAccordion">
+                                            <div class="accordion-body">
+                                                <div class="row g-3">
+                                                    <div class="col-md-2">
+                                                        <label for="prefix" class="form-label">Prefix</label>
+                                                        <input type="text" class="form-control" id="prefix">
+                                                    </div>
+                                                    <div class="col-md-5">
+                                                        <label for="firstName" class="form-label">First Name</label>
+                                                        <input type="text" class="form-control" id="firstName" required>
+                                                        <div class="invalid-feedback">First Name is required.</div>
+                                                    </div>
+                                                    <div class="col-md-5">
+                                                        <label for="lastName" class="form-label">Last Name</label>
+                                                        <input type="text" class="form-control" id="lastName">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="dob" class="form-label">Date of Birth</label>
+                                                        <input type="date" class="form-control" id="dob">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="gender" class="form-label">Gender</label>
+                                                        <select class="form-select" id="gender">
+                                                            <option value="">Select...</option>
+                                                            <option value="male">Male</option>
+                                                            <option value="female">Female</option>
+                                                            <option value="other">Other</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="maritalStatus" class="form-label">Marital
+                                                            Status</label>
+                                                        <select class="form-select" id="maritalStatus">
+                                                            <option value="">Select...</option>
+                                                            <option value="single">Single</option>
+                                                            <option value="married">Married</option>
+                                                            <option value="divorced">Divorced</option>
+                                                            <option value="widowed">Widowed</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="bloodGroup" class="form-label">Blood Group</label>
+                                                        <input type="text" class="form-control" id="bloodGroup">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="language" class="form-label">Language</label>
+                                                        <input type="text" class="form-control" id="language">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingContact">
+                                            <button class="accordion-button collapsed" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#collapseContact"
+                                                aria-expanded="false" aria-controls="collapseContact">
+                                                Contact Information
+                                            </button>
+                                        </h2>
+                                        <div id="collapseContact" class="accordion-collapse collapse"
+                                            aria-labelledby="headingContact" data-bs-parent="#profileAccordion">
+                                            <div class="accordion-body">
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label for="email" class="form-label">Email</label>
+                                                        <input type="email" class="form-control" id="email">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="mobile" class="form-label">Mobile</label>
+                                                        <input type="tel" class="form-control" id="mobile" required>
+                                                        <div class="invalid-feedback">Mobile number is required.</div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="altContact" class="form-label">Alternate Contact
+                                                            Number</label>
+                                                        <input type="tel" class="form-control" id="altContact">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="familyContact" class="form-label">Family Contact
+                                                            Number</label>
+                                                        <input type="tel" class="form-control" id="familyContact">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingAddress">
+                                            <button class="accordion-button collapsed" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#collapseAddress"
+                                                aria-expanded="false" aria-controls="collapseAddress">
+                                                Address Details
+                                            </button>
+                                        </h2>
+                                        <div id="collapseAddress" class="accordion-collapse collapse"
+                                            aria-labelledby="headingAddress" data-bs-parent="#profileAccordion">
+                                            <div class="accordion-body">
+                                                <div class="row g-3">
+                                                    <div class="col-12">
+                                                        <label for="currentLocation" class="form-label">Current
+                                                            Location</label>
+                                                        <input type="text" class="form-control" id="currentLocation">
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <label for="permanentLocation" class="form-label">Permanent
+                                                            Location</label>
+                                                        <input type="text" class="form-control" id="permanentLocation">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingGuardian">
+                                            <button class="accordion-button collapsed" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#collapseGuardian"
+                                                aria-expanded="false" aria-controls="collapseGuardian">
+                                                Guardian Details
+                                            </button>
+                                        </h2>
+                                        <div id="collapseGuardian" class="accordion-collapse collapse"
+                                            aria-labelledby="headingGuardian" data-bs-parent="#profileAccordion">
+                                            <div class="accordion-body">
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label for="fatherFirstName" class="form-label">Father's First
+                                                            Name</label>
+                                                        <input type="text" class="form-control" id="fatherFirstName">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="fatherLastName" class="form-label">Father's Last
+                                                            Name</label>
+                                                        <input type="text" class="form-control" id="fatherLastName">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="fatherMobile" class="form-label">Father's Mobile
+                                                            Number</label>
+                                                        <input type="tel" class="form-control" id="fatherMobile">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="fatherEmail" class="form-label">Father's
+                                                            Email</label>
+                                                        <input type="email" class="form-control" id="fatherEmail">
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <label for="fatherLocation" class="form-label">Father's Home
+                                                            Location</label>
+                                                        <input type="text" class="form-control" id="fatherLocation">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="motherFirstName" class="form-label">Mother's First
+                                                            Name</label>
+                                                        <input type="text" class="form-control" id="motherFirstName">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="motherLastName" class="form-label">Mother's Last
+                                                            Name</label>
+                                                        <input type="text" class="form-control" id="motherLastName">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="motherMobile" class="form-label">Mother's Mobile
+                                                            Number</label>
+                                                        <input type="tel" class="form-control" id="motherMobile">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="motherEmail" class="form-label">Mother's
+                                                            Email</label>
+                                                        <input type="email" class="form-control" id="motherEmail">
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <label for="motherLocation" class="form-label">Mother's Home
+                                                            Location</label>
+                                                        <input type="text" class="form-control" id="motherLocation">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingBank">
+                                            <button class="accordion-button collapsed" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#collapseBank"
+                                                aria-expanded="false" aria-controls="collapseBank">
+                                                Bank Details
+                                            </button>
+                                        </h2>
+                                        <div id="collapseBank" class="accordion-collapse collapse"
+                                            aria-labelledby="headingBank" data-bs-parent="#profileAccordion">
+                                            <div class="accordion-body">
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label for="accountHolderName" class="form-label">Account
+                                                            Holder's
+                                                            Name</label>
+                                                        <input type="text" class="form-control"
+                                                            id="accountHolderName">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="accountNumber" class="form-label">Account
+                                                            Number</label>
+                                                        <input type="text" class="form-control" id="accountNumber">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="bankName" class="form-label">Bank Name</label>
+                                                        <input type="text" class="form-control" id="bankName">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="bankIdentifierCode" class="form-label">Bank
+                                                            Identifier Code
+                                                            (BIC)</label>
+                                                        <input type="text" class="form-control"
+                                                            id="bankIdentifierCode">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="branch" class="form-label">Branch</label>
+                                                        <input type="text" class="form-control" id="branch">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="taxPayerId" class="form-label">Tax Payer ID</label>
+                                                        <input type="text" class="form-control" id="taxPayerId">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="debitCardNumber" class="form-label">Debit Card
+                                                            Number</label>
+                                                        <input type="text" class="form-control" id="debitCardNumber">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="creditCardNumber" class="form-label">Credit Card
+                                                            Number</label>
+                                                        <input type="text" class="form-control" id="creditCardNumber">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingSocial">
+                                            <button class="accordion-button collapsed" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#collapseSocial"
+                                                aria-expanded="false" aria-controls="collapseSocial">
+                                                Social Media Links
+                                            </button>
+                                        </h2>
+                                        <div id="collapseSocial" class="accordion-collapse collapse"
+                                            aria-labelledby="headingSocial" data-bs-parent="#profileAccordion">
+                                            <div class="accordion-body">
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label for="facebookLink" class="form-label">Facebook
+                                                            Link</label>
+                                                        <input type="url" class="form-control" id="facebookLink">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="twitterLink" class="form-label">Twitter
+                                                            Link</label>
+                                                        <input type="url" class="form-control" id="twitterLink">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="socialMedia1" class="form-label">Social Media
+                                                            1</label>
+                                                        <input type="url" class="form-control" id="socialMedia1">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="socialMedia2" class="form-label">Social Media
+                                                            2</label>
+                                                        <input type="url" class="form-control" id="socialMedia2">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="socialMedia3" class="form-label">Social Media
+                                                            3</label>
+                                                        <input type="url" class="form-control" id="socialMedia3">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="socialMedia4" class="form-label">Social Media
+                                                            4</label>
+                                                        <input type="url" class="form-control" id="socialMedia4">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="socialMedia5" class="form-label">Social Media
+                                                            5</label>
+                                                        <input type="url" class="form-control" id="socialMedia5">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingCustom">
+                                            <button class="accordion-button collapsed" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#collapseCustom"
+                                                aria-expanded="false" aria-controls="collapseCustom">
+                                                Custom Fields
+                                            </button>
+                                        </h2>
+                                        <div id="collapseCustom" class="accordion-collapse collapse"
+                                            aria-labelledby="headingCustom" data-bs-parent="#profileAccordion">
+                                            <div class="accordion-body">
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label for="customField1" class="form-label">Custom Field
+                                                            1</label>
+                                                        <input type="text" class="form-control" id="customField1">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="customField2" class="form-label">Custom Field
+                                                            2</label>
+                                                        <input type="text" class="form-control" id="customField2">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="customField3" class="form-label">Custom Field
+                                                            3</label>
+                                                        <input type="text" class="form-control" id="customField3">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="customField4" class="form-label">Custom Field
+                                                            4</label>
+                                                        <input type="text" class="form-control" id="customField4">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="customField5" class="form-label">Custom Field
+                                                            5</label>
+                                                        <input type="text" class="form-control" id="customField5">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4 text-end">
+                                    <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="security-tab-pane" role="tabpanel" aria-labelledby="security-tab"
+                    tabindex="0">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="row">
+                                <div class="col-md-8 offset-md-2">
+                                    <form id="passwordManagementForm">
+                                        <div class="mb-3">
+                                            <label for="usernameDisplay" class="form-label">Username</label>
+                                            <input type="text" class="form-control" id="usernameDisplay">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="currentPassword" class="form-label">Current Password</label>
+                                            <input type="password" class="form-control" id="currentPassword" required>
+                                        </div>
+                                        <hr>
+                                        <h6 class="text-muted">Change Password (Optional)</h6>
+                                        <div class="mb-3">
+                                            <label for="newPassword" class="form-label">New Password</label>
+                                            <input type="password" class="form-control" id="newPassword">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="confirmNewPassword" class="form-label">Confirm New
+                                                Password</label>
+                                            <input type="password" class="form-control" id="confirmNewPassword">
+                                        </div>
+                                        <hr>
+                                        <h6 class="text-muted">Change Code (Optional)</h6>
+                                        <div class="mb-3">
+                                            <label for="newCode" class="form-label">New Code</label>
+                                            <input type="text" class="form-control" id="newCode">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="confirmNewCode" class="form-label">Confirm New Code</label>
+                                            <input type="text" class="form-control" id="confirmNewCode">
+                                        </div>
+                                        <hr>
+                                        <div class="mb-3">
+                                            <label for="userCode" class="form-label">Current Code (Required to make
+                                                changes)</label>
+                                            <input type="text" class="form-control" id="userCode" required>
+                                        </div>
+                                        <div class="text-end">
+                                            <button type="submit" class="btn btn-primary">Save Security
+                                                Changes</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="text-center">
+            <span>Made with care in <strong>Bangladesh 🇧🇩 </strong>| <strong> Developed by</strong>: Indranil Saha | <strong> Version</strong>: 48.9.9 | <strong>Powered by</strong>: <a href="https://firebase.google.com/" target="_blank" class="text-decoration-none">Google Firebase.</a></span>
+        </div>
+    </footer>
+    <!-- Theme Switcher -->
+     
+    <div class="theme-switch-wrapper">
+        <button id="theme-switcher" aria-label="Toggle theme">
+            <span class="slider-thumb bg-secondary">
+                <svg class="sun" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                    fill="currentColor" viewBox="0 0 16 16">
+                    <path
+                        d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
+                </svg>
+                <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    viewBox="0 0 16 16">
+                    <path
+                        d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
+                </svg>
+            </span>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+    <script type="module">
+        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+        import { app } from './firebase-init.js';
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            const logoutButton = document.getElementById('logoutButton');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            const editProfileForm = document.getElementById('editProfileForm');
+            const passwordManagementForm = document.getElementById('passwordManagementForm');
+            const employeeNavItem = document.getElementById('employee-nav-item');
+
+            let currentUser = null;
+            const db = getFirestore(app);
+            function hasPermission(permission) {
+                if (!currentUser) return false;
+                if (currentUser.role === 'admin') return true;
+                return Array.isArray(currentUser.permissions) && currentUser.permissions.includes(permission);
+            }
+            async function loadUserData() {
+                if (!currentUser) return;
+
+                const userDocRef = doc(db, "users", currentUser.id);
+                const userDocSnap = await getDoc(userDocRef);
+
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+                    document.getElementById('prefix').value = userData.prefix || '';
+                    document.getElementById('firstName').value = userData.firstName || '';
+                    document.getElementById('lastName').value = userData.lastName || '';
+                    document.getElementById('email').value = userData.email || '';
+                    document.getElementById('mobile').value = userData.mobile || '';
+                    document.getElementById('currentLocation').value = userData.currentLocation || '';
+                    document.getElementById('permanentLocation').value = userData.permanentLocation || '';
+                    document.getElementById('language').value = userData.language || '';
+                    document.getElementById('dob').value = userData.dob || '';
+                    document.getElementById('gender').value = userData.gender || '';
+                    document.getElementById('maritalStatus').value = userData.maritalStatus || '';
+                    document.getElementById('bloodGroup').value = userData.bloodGroup || '';
+                    document.getElementById('altContact').value = userData.altContact || '';
+                    document.getElementById('familyContact').value = userData.familyContact || '';
+                    document.getElementById('facebookLink').value = userData.facebookLink || '';
+                    document.getElementById('twitterLink').value = userData.twitterLink || '';
+                    document.getElementById('socialMedia1').value = userData.socialMedia1 || '';
+                    document.getElementById('socialMedia2').value = userData.socialMedia2 || '';
+                    document.getElementById('socialMedia3').value = userData.socialMedia3 || '';
+                    document.getElementById('socialMedia4').value = userData.socialMedia4 || '';
+                    document.getElementById('socialMedia5').value = userData.socialMedia5 || '';
+                    document.getElementById('customField1').value = userData.customField1 || '';
+                    document.getElementById('customField2').value = userData.customField2 || '';
+                    document.getElementById('customField3').value = userData.customField3 || '';
+                    document.getElementById('customField4').value = userData.customField4 || '';
+                    document.getElementById('customField5').value = userData.customField5 || '';
+                    document.getElementById('fatherFirstName').value = userData.fatherFirstName || '';
+                    document.getElementById('fatherLastName').value = userData.fatherLastName || '';
+                    document.getElementById('fatherMobile').value = userData.fatherMobile || '';
+                    document.getElementById('fatherEmail').value = userData.fatherEmail || '';
+                    document.getElementById('fatherLocation').value = userData.fatherLocation || '';
+                    document.getElementById('motherFirstName').value = userData.motherFirstName || '';
+                    document.getElementById('motherLastName').value = userData.motherLastName || '';
+                    document.getElementById('motherMobile').value = userData.motherMobile || '';
+                    document.getElementById('motherEmail').value = userData.motherEmail || '';
+                    document.getElementById('motherLocation').value = userData.motherLocation || '';
+                    document.getElementById('accountHolderName').value = userData.accountHolderName || '';
+                    document.getElementById('accountNumber').value = userData.accountNumber || '';
+                    document.getElementById('bankName').value = userData.bankName || '';
+                    document.getElementById('bankIdentifierCode').value = userData.bankIdentifierCode || '';
+                    document.getElementById('branch').value = userData.branch || '';
+                    document.getElementById('taxPayerId').value = userData.taxPayerId || '';
+                    document.getElementById('debitCardNumber').value = userData.debitCardNumber || '';
+                    document.getElementById('creditCardNumber').value = userData.creditCardNumber || ''; // This was the line causing the error
+                    document.getElementById('usernameDisplay').value = userData.username || '';
+                }
+            }
+            editProfileForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                if (!currentUser) return;
+
+                const updatedProfileData = {
+                    prefix: document.getElementById('prefix').value.trim(),
+                    firstName: document.getElementById('firstName').value.trim(),
+                    name: `${document.getElementById('firstName').value.trim()} ${document.getElementById('lastName').value.trim()}`.trim(),
+                    lastName: document.getElementById('lastName').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    mobile: document.getElementById('mobile').value.trim(),
+                    currentLocation: document.getElementById('currentLocation').value.trim(),
+                    permanentLocation: document.getElementById('permanentLocation').value.trim(),
+                    language: document.getElementById('language').value.trim(),
+                    dob: document.getElementById('dob').value,
+                    gender: document.getElementById('gender').value,
+                    maritalStatus: document.getElementById('maritalStatus').value,
+                    bloodGroup: document.getElementById('bloodGroup').value.trim(),
+                    altContact: document.getElementById('altContact').value.trim(),
+                    familyContact: document.getElementById('familyContact').value.trim(),
+                    facebookLink: document.getElementById('facebookLink').value.trim(),
+                    twitterLink: document.getElementById('twitterLink').value.trim(),
+                    socialMedia1: document.getElementById('socialMedia1').value.trim(),
+                    socialMedia2: document.getElementById('socialMedia2').value.trim(),
+                    socialMedia3: document.getElementById('socialMedia3').value.trim(),
+                    socialMedia4: document.getElementById('socialMedia4').value.trim(),
+                    socialMedia5: document.getElementById('socialMedia5').value.trim(),
+                    customField1: document.getElementById('customField1').value.trim(),
+                    customField2: document.getElementById('customField2').value.trim(),
+                    customField3: document.getElementById('customField3').value.trim(),
+                    customField4: document.getElementById('customField4').value.trim(),
+                    customField5: document.getElementById('customField5').value.trim(),
+                    // Guardian Details
+                    fatherFirstName: document.getElementById('fatherFirstName').value.trim(),
+                    fatherLastName: document.getElementById('fatherLastName').value.trim(),
+                    fatherMobile: document.getElementById('fatherMobile').value.trim(),
+                    fatherEmail: document.getElementById('fatherEmail').value.trim(),
+                    fatherLocation: document.getElementById('fatherLocation').value.trim(),
+                    motherFirstName: document.getElementById('motherFirstName').value.trim(),
+                    motherLastName: document.getElementById('motherLastName').value.trim(),
+                    motherMobile: document.getElementById('motherMobile').value.trim(),
+                    motherEmail: document.getElementById('motherEmail').value.trim(),
+                    motherLocation: document.getElementById('motherLocation').value.trim(),
+                    // Bank Details
+                    accountHolderName: document.getElementById('accountHolderName').value.trim(),
+                    accountNumber: document.getElementById('accountNumber').value.trim(),
+                    bankName: document.getElementById('bankName').value.trim(),
+                    bankIdentifierCode: document.getElementById('bankIdentifierCode').value.trim(),
+                    branch: document.getElementById('branch').value.trim(),
+                    taxPayerId: document.getElementById('taxPayerId').value.trim(),
+                    debitCardNumber: document.getElementById('debitCardNumber').value.trim(),
+                    creditCardNumber: document.getElementById('creditCardNumber').value.trim(),
+                };
+                try {
+                    const userDocRef = doc(db, "users", currentUser.id);
+                    await updateDoc(userDocRef, updatedProfileData);
+                    alert('Profile updated successfully!');
+                    if (updatedProfileData.firstName) {
+                        welcomeMessage.textContent = `Welcome, ${updatedProfileData.firstName}`;
+                    }
+                } catch (error) {
+                    console.error("Error updating profile:", error);
+                    alert("Failed to update profile. Please try again.");
+                }
+            });
+            passwordManagementForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                if (!currentUser) return;
+
+                const currentUsername = currentUser.username || '';
+                const newUsername = document.getElementById('usernameDisplay').value.trim();
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+                const userCode = document.getElementById('userCode').value;
+                const newCode = document.getElementById('newCode').value;
+                const confirmNewCode = document.getElementById('confirmNewCode').value;
+
+                const isChangingUsername = newUsername !== currentUsername;
+                const isChangingPassword = newPassword || confirmNewPassword;
+                const isChangingCode = newCode || confirmNewCode;
+
+                if (!isChangingPassword && !isChangingCode && !isChangingUsername) {
+                    alert('Please enter a new password, code, or username to make a change.');
+                    return;
+                }
+
+                if (isChangingPassword && newPassword !== confirmNewPassword) {
+                    alert('New passwords do not match.');
+                    return;
+                }
+
+                if (isChangingCode && newCode !== confirmNewCode) {
+                    alert('New codes do not match.');
+                    return;
+                }
+
+                try {
+                    const userDocRef = doc(db, "users", currentUser.id);
+                    const userDocSnap = await getDoc(userDocRef);
+                    const userData = userDocSnap.data();
+                    if (userData.password !== currentPassword) {
+                        alert('Incorrect current password.');
+                        return;
+                    }
+                    if (userData.code !== userCode) {
+                        alert('Incorrect current code.');
+                        return;
+                    }
+
+                    const updates = {};
+                    let successMessage = 'Your changes have been saved successfully!';
+
+                    if (isChangingUsername) {
+                        if (!newUsername) {
+                            alert('Username cannot be empty.');
+                            return;
+                        }
+                        const q = query(collection(db, "users"), where("username", "==", newUsername));
+                        const querySnapshot = await getDocs(q);
+                        if (!querySnapshot.empty) {
+                            alert('Username already taken.');
+                            return;
+                        }
+                        updates.username = newUsername;
+                    }
+
+                    if (isChangingPassword) {
+                        updates.password = newPassword;
+                    }
+                    if (isChangingCode) {
+                        updates.code = newCode;
+                    }
+
+                    await updateDoc(userDocRef, updates);
+                    if (isChangingUsername) {
+                        currentUser.username = newUsername;
+                    }
+                    alert(successMessage);
+                    passwordManagementForm.reset();
+                    document.getElementById('usernameDisplay').value = currentUser.username || '';
+                } catch (error) {
+                    console.error("Error updating credentials:", error);
+                    alert("Failed to update your credentials. Please try again.");
+                }
+            });
+            function setupUI() {
+                function hasPermissionForNav(mainPerm, relatedPerms = []) {
+                    if (hasPermission(mainPerm)) return true;
+                    return relatedPerms.some(p => hasPermission(p));
+                }
+
+                const navItems = {
+                    'dashboard': { el: document.querySelector('a[href="dashboard.html"]')?.closest('.nav-item'), perm: 'dashboard' },
+                    'products': { el: document.querySelector('a[href="#productSubmenu"]')?.closest('.nav-item'), perm: 'products', related: ['all_product', 'add_product'] },
+                    'purchase': { el: document.querySelector('a[href="#purchaseSubmenu"]')?.closest('.nav-item'), perm: 'purchase', related: ['purchase_return', 'purchase_return_history'] },
+                    'sales': { el: document.querySelector('a[href="#salesSubmenu"]')?.closest('.nav-item'), perm: 'sales', related: ['add_sale', 'add_sale_record', 'pos_sale_history', 'sell_return', 'sell_return_history'] },
+                    'people': { el: document.querySelector('a[href="#peopleSubmenu"]')?.closest('.nav-item'), perm: 'people', related: ['customer', 'supplier'] },
+                    'leaderboard': { el: document.getElementById('leaderboard-nav-item'), perm: 'leaderboard' },
+                    'employee': { el: document.getElementById('employee-nav-item'), perm: 'manage_employees' },
+                    'account': { el: document.querySelector('a[href="account.html"]')?.closest('.nav-item'), perm: null }, // Always visible
+                    'pos': { el: document.querySelector('a[href="pos.html"]'), perm: 'pos' } // Corrected spelling: "signin"
+                };
+
+                for (const key in navItems) {
+                    const item = navItems[key];
+                    if (item.el) {
+                        if (currentUser.role === 'admin') {
+                            item.el.style.display = '';
+                        } else if (currentUser.role === 'employee') {
+                            item.el.style.display = (key === 'employee') ? 'none' : '';
+                        } else {
+
+                            if (item.perm === null || hasPermissionForNav(item.perm, item.related || [])) {
+                                item.el.style.display = '';
+                            } else {
+                                item.el.style.display = 'none';
+                            }
+                        }
+                    }
+                }
+                if (currentUser && welcomeMessage) {
+                    welcomeMessage.textContent = `Welcome, ${currentUser.name.split(' ')[0]}`;
+                }
+
+                logoutButton.addEventListener('click', () => {
+                    sessionStorage.clear(); window.location.href = 'signin.html';
+                });
+
+                // Theme Switcher
+                const themeSwitcher = document.getElementById('theme-switcher');
+                const htmlEl = document.documentElement;
+                const applyTheme = (theme) => htmlEl.setAttribute('data-bs-theme', theme);
+                const updateSwitcherUI = (theme) => {
+                    const thumb = themeSwitcher.querySelector('.slider-thumb');
+                    const sunIcon = themeSwitcher.querySelector('.sun');
+                    const moonIcon = themeSwitcher.querySelector('.moon');
+                    thumb.style.transform = theme === 'dark' ? 'translateX(30px)' : 'translateX(0px)';
+                    if (sunIcon) sunIcon.style.display = theme === 'dark' ? 'block' : 'none';
+                    if (moonIcon) moonIcon.style.display = theme === 'dark' ? 'none' : 'block';
+                };
+                const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                applyTheme(savedTheme);
+                updateSwitcherUI(savedTheme);
+                themeSwitcher.addEventListener('click', () => {
+                    const newTheme = htmlEl.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                    applyTheme(newTheme);
+                    updateSwitcherUI(newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            }
+            // Initial load
+            const sessionUserId = sessionStorage.getItem('loggedInUserId');
+            if (sessionUserId) {
+                const userDocRef = doc(db, "users", sessionUserId);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                    currentUser = { id: userDocSnap.id, ...userDocSnap.data() };
+                    setupUI();
+                    await loadUserData();
+                } else {
+                    console.error("User document not found for loggedInUserId:", sessionUserId);
+                    sessionStorage.clear();
+                    window.location.href = 'signin.html';
+                }
+            } else {
+                window.location.href = 'signin.html';
+            }
+        });
+    </script>
+</body>
+
+</html>

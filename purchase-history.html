@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase History</title>
+    <link rel="icon" href="logo.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bs-primary-rgb: 99, 102, 241;
+            --bs-primary: #6366f1;
+            --bs-body-font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--bs-body-font-family);
+            background-color: var(--bs-tertiary-bg);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100%;
+            padding-top: 56px;
+            background-color: var(--bs-body-bg);
+            border-right: 1px solid var(--bs-border-color);
+            z-index: 1020;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            color: var(--bs-body-color);
+            padding: .75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: var(--bs-tertiary-bg);
+        }
+
+        .sidebar .nav-link.active {
+            color: var(--bs-primary);
+            font-weight: 600;
+            border-left-color: var(--bs-primary);
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding-top: 72px;
+            flex-grow: 1;
+            padding-bottom: 40px;
+        }
+
+        /* Theme Switcher */
+        .theme-switch-wrapper {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 1001;
+        }
+
+        #theme-switcher {
+            background: none;
+            border: 1px solid var(--bs-border-color-translucent);
+            padding: 0;
+            cursor: pointer;
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: var(--bs-tertiary-bg);
+            border-radius: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-card {
+            border: none;
+            border-radius: .75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, .1), 0 2px 4px -2px rgba(0, 0, 0, .1);
+        }
+
+        .stat-card .card-body {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-card .icon-circle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        .footer {
+            background-color: var(--bs-body-bg);
+            padding: 1rem;
+            border-top: 1px solid var(--bs-border-color);
+            margin-left: 240px;
+        }
+
+        [data-bs-theme="dark"] .footer {
+            background: linear-gradient(270deg, #1e1b4b 0%, #3730a3 100%);
+        }
+
+        [data-bs-theme="light"] .footer {
+            background: linear-gradient(270deg, #e0e7ff 0%, #eef2ff 100%);
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        // Redirect to sign-in if not authenticated
+        if (sessionStorage.getItem('isAuthenticated') !== 'true') {
+            window.location.href = 'signin.html';
+        }
+    </script>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.html" style="margin-left: 240px;">Baroda Computure And Sales</a>
+            <div>
+                <a href="pos.html" class="btn btn-warning me-2" title="Go to Point of Sale">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-cart-check-fill" viewBox="0 0 16 16">
+                        <path
+                            d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 4 0h3.5a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1.646-7.646-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708z" />
+                    </svg>
+                    POS
+                </a>
+                <span id="welcomeMessage" class="navbar-text text-white me-3"></span>
+                <button id="logoutButton" class="btn btn-danger" title="Logout from the application">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="sidebar">
+        <div class="p-3 text-center border-bottom">
+            <h5 class="mb-0">Navigation</h5>
+        </div>
+        <ul class="nav flex-column pt-2">
+            <li class="nav-item">
+                <a class="nav-link" href="dashboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#productSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="productSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <path d="M16 13H8"></path>
+                        <path d="M16 17H8"></path>
+                        <path d="M10 9H8"></path>
+                    </svg>
+                    Products
+                </a>
+                <div class="collapse" id="productSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="web.html">All Product</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="add-product.html">Add product</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item" id="print-label-nav-item">
+                <a class="nav-link" href="#printLabelSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="printLabelSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                        <rect x="6" y="14" width="12" height="8"></rect>
+                    </svg>
+                    <span>Print Label</span>
+                </a>
+                <div class="collapse" id="printLabelSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="barcode_generator.html">Barcode Generator</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="print-customar-card.html">Print Customer Card</a></li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="#purchaseSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="true" aria-controls="purchaseSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 10V7a5 5 0 0 1 10 0v3"></path>
+                        <path
+                            d="M17 10h-1a4 4 0 0 0-8 0H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Z">
+                        </path>
+                    </svg>
+                    Purchase
+                </a>
+                <div class="collapse show" id="purchaseSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase.html">Add purchase</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link active" href="purchase-history.html">Purchase History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-return.html">Purchase Return</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-return-history.html">Purchase Return History</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#salesSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="salesSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bag-check" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M10.854 8.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                    <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1m3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/>
+                    </svg>
+                    Sales
+                </a>
+                <div class="collapse" id="salesSubmenu">
+                    
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="all-sale-history.html">All Sales History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="add-sale-history.html">Add Sales History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="pos-sales-history.html">POS Sales History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="add-sale.html">Add sale</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="order-sale-history.html">Order Sale History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="sell-return.html">Sell Return</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="sell-return-history.html">Sell Return
+                         History</a>
+                        </li>
+                        
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#peopleSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="peopleSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-users">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    People
+                </a>
+                <div class="collapse" id="peopleSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="customer.html">Customer List</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="supplier.html">Supplier List</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="order.html">Order</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#reportsSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="reportsSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-bar-chart-2">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    Reports
+                </a>
+                <div class="collapse" id="reportsSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="profit-and-loss.html">Profit &
+                                Loss</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-report.html">Stock Report</a>
+                            
+                        </li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-adjust.html">Stock Adjust</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item" id="leaderboard-nav-item">
+                <a class="nav-link" href="leaderboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-award"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                    Leaderboard
+                </a>
+            </li>
+            <li class="nav-item" id="employee-nav-item" style="display: none;">
+                <a class="nav-link" href="employee.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Employee
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="account.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Account
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="container-xl px-4">
+            <div
+                class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Purchase History</h1>
+                <button id="clearPurchaseHistoryBtn" class="btn btn-danger" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-trash me-2" viewBox="0 0 16 16">
+                        <path
+                            d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                        <path fill-rule="evenodd"
+                            d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                    </svg>
+                    Clear Purchase History
+                </button>
+            </div>
+
+            <!-- Stat Cards -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-4" id="perm-purchase_history_total_purchase_value">
+                    <div class="card stat-card bg-danger-subtle text-danger-emphasis h-100">
+                        <div class="card-body">
+                            <div>
+                                <h6 class="card-title text-uppercase small">Total Purchase Value</h6>
+                                <h3 class="fw-bold" id="totalPurchaseValueStat">0.00 BDT</h3>
+                            </div>
+                            <div class="icon-circle bg-danger">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                    class="bi bi-bag-dash-fill" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                        d="M10.5 3.5a2.5 2.5 0 0 0-5 0V4h5v-.5zm1 0V4H15v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4h3.5v-.5a3.5 3.5 0 1 1 7 0zM6 9.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1H6z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4" id="perm-purchase_history_total_purchases">
+                    <div class="card stat-card bg-primary-subtle text-primary-emphasis h-100">
+                        <div class="card-body">
+                            <div>
+                                <h6 class="card-title text-uppercase small">Total Purchases</h6>
+                                <h3 class="fw-bold" id="totalPurchaseCount">0</h3>
+                            </div>
+                            <div class="icon-circle bg-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                    class="bi bi-receipt" viewBox="0 0 16 16">
+                                    <path
+                                        d="M1.92.506a.5.5 0 0 1 .434.14L3 1.293l.646-.647a.5.5 0 0 1 .708 0L5 1.293l.646-.647a.5.5 0 0 1 .708 0L7 1.293l.646-.647a.5.5 0 0 1 .708 0L9 1.293l.646-.647a.5.5 0 0 1 .708 0L11 1.293l.646-.647a.5.5 0 0 1 .708 0L13 1.293l.646-.647a.5.5 0 0 1 .638.057l.055.059a.5.5 0 0 1 .059.638l-.647.646.647.646a.5.5 0 0 1 0 .708l-.647.646.647.646a.5.5 0 0 1 0 .708l-.647.646.647.646a.5.5 0 0 1 0 .708l-.647.646.647.646a.5.5 0 0 1 0 .708l-1.293 1.293a.5.5 0 0 1-.708 0l-.646-.647-.646.647a.5.5 0 0 1-.708 0l-.646-.647-.646.647a.5.5 0 0 1-.708 0l-.646-.647-.646.647a.5.5 0 0 1-.708 0l-.646-.647-.646.647a.5.5 0 0 1-.708 0L3 8.707l-.646.647a.5.5 0 0 1-.708 0l-1.293-1.293a.5.5 0 0 1 0-.708l.647-.646-.647-.646a.5.5 0 0 1 0-.708l.647-.646-.647-.646a.5.5 0 0 1 0-.708l.647-.646-.647-.646a.5.5 0 0 1 .14-.434zM4 3.5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm2-8a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm2-8a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm2-8a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5zm0 2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1a.5.5 0 0 1 .5-.5z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4" id="perm-purchase_history_avg_purchase_value">
+                    <div class="card stat-card bg-info-subtle text-info-emphasis h-100">
+                        <div class="card-body">
+                            <div>
+                                <h6 class="card-title text-uppercase small">Avg. Purchase Value</h6>
+                                <h3 class="fw-bold" id="avgPurchaseValue">0.00 BDT</h3>
+                            </div>
+                            <div class="icon-circle bg-info">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                    class="bi bi-calculator-fill" viewBox="0 0 16 16">
+                                    <path
+                                        d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2 .5v2a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-.5-.5h-7a.5.5 0 0 0-.5.5zm0 4v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5zM4.5 9a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zM4 12.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5zM7.5 6a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zM7 9.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5zm.5 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zM10.5 6a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm-.5 2.5a.5.5 0 0 0 .5.5v4a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4" id="perm-purchase_history_total_purchase_due">
+                    <div class="card stat-card bg-warning-subtle text-warning-emphasis h-100">
+                        <div class="card-body">
+                            <div>
+                                <h6 class="card-title text-uppercase small">Total Purchase Due</h6>
+                                <h3 class="fw-bold" id="totalPurchaseDueStat">0.00 BDT</h3>
+                            </div>
+                            <div class="icon-circle bg-warning">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                    class="bi bi-hourglass-split" viewBox="0 0 16 16">
+                                    <path
+                                        d="M2.5 15a.5.5 0 1 1 0-1h11a.5.5 0 0 1 0 1h-11zm.21-11.542a.5.5 0 0 1 .78 0l2.99 4.225a.5.5 0 0 1 0 .564l-2.99 4.225a.5.5 0 0 1-.78-.564L4.89 8 2.71 3.958a.5.5 0 0 1 0-.564zm8.58 0a.5.5 0 0 1 .78 0l2.99 4.225a.5.5 0 0 1 0 .564l-2.99 4.225a.5.5 0 0 1-.78-.564L11.11 8l-2.18-3.042a.5.5 0 0 1 0-.564zM13.5 1a.5.5 0 0 0 0 1h-11a.5.5 0 0 0 0-1h11z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form id="purchaseFilterForm" class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label for="startDate" class="form-label">Start Date</label>
+                            <input type="date" id="startDate" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="endDate" class="form-label">End Date</label>
+                            <input type="date" id="endDate" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="supplierSearch" class="form-label">Supplier Name</label>
+                            <input type="text" id="supplierSearch" class="form-control"
+                                placeholder="Search by supplier...">
+                        </div>
+                        <div class="col-md-1"><button type="submit" class="btn btn-primary w-100">Filter</button></div>
+                        <div class="col-md-2"><button type="reset" id="resetFilterBtn"
+                                class="btn btn-secondary w-100">Reset</button></div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">All Purchase Records</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Purchase ID</th>
+                                            <th>Supplier</th>
+                                            <th class="text-center">Quantity</th>
+                                            <th class="text-end">Total Cost (BDT)</th>
+                                            <th class="text-center">Date</th>
+                                            <th class="text-end">Actions</th>
+                                            <th class="text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="purchasesTableBody">
+                                        <!-- Data will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="text-center">
+            <span>Made with care in <strong>Bangladesh 🇧🇩 </strong>| <strong> Developed by</strong>: Indranil Saha | <strong> Version</strong>: 48.9.9 | <strong>Powered by</strong>: <a href="https://firebase.google.com/" target="_blank" class="text-decoration-none">Google Firebase.</a></span>
+        </div>
+    </footer>
+
+    <!-- Purchase Details Modal -->
+    <div class="modal fade" id="purchaseDetailsModal" tabindex="-1" aria-labelledby="purchaseDetailsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="purchaseDetailsModalLabel">Purchase Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="purchaseReceiptContainer">
+                        <!-- Receipt content will be injected here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="printPurchaseReceiptBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-printer-fill me-2" viewBox="0 0 16 16">
+                            <path
+                                d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z" />
+                            <path
+                                d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z" />
+                        </svg>
+                        Print
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pay Due Modal -->
+    <div class="modal fade" id="payDueModal" tabindex="-1" aria-labelledby="payDueModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="payDueModalLabel">Settle Due Payment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="payDueForm">
+                        <input type="hidden" id="payDuePurchaseId">
+                        <p>Purchase ID: <strong id="duePurchaseIdDisplay"></strong></p>
+                        <p>Total Amount: <strong id="dueTotalAmountDisplay"></strong></p>
+                        <p class="text-danger">Current Due: <strong id="dueCurrentDueDisplay"></strong></p>
+                        <hr>
+                        <div class="mb-3">
+                            <label for="paymentAmount" class="form-label">Payment Amount</label>
+                            <input type="number" class="form-control" id="paymentAmount" step="0.01" min="0.01"
+                                required>
+                            <div class="invalid-feedback">Please enter a valid payment amount.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="payDueForm" class="btn btn-primary" id="confirmPaymentBtn">Confirm
+                        Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Theme Switcher -->
+    <div class="theme-switch-wrapper">
+        <button id="theme-switcher" aria-label="Toggle theme">
+            <span class="slider-thumb bg-secondary">
+                <svg class="sun" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                    fill="currentColor" viewBox="0 0 16 16">
+                    <path
+                        d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
+                </svg>
+                <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    viewBox="0 0 16 16">
+                    <path
+                        d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
+                </svg>
+            </span>
+        </button>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- DOM Elements ---
+            const purchasesTableBody = document.getElementById('purchasesTableBody');
+            const purchaseFilterForm = document.getElementById('purchaseFilterForm');
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const supplierSearchInput = document.getElementById('supplierSearch');
+            const resetFilterBtn = document.getElementById('resetFilterBtn');
+
+            // --- Data Stores & State ---
+            let allPurchases = [];
+            let allProducts = [];
+            let currentUser = null;
+            let db; // Firestore instance
+
+            function hasPermission(user, permission) {
+                if (!user) return false;
+                if (user.role === 'admin') return true;
+                return user.permissions && user.permissions.includes(permission);
+            }
+
+            function updateSummaryCards(purchasesData, returnedPurchaseIds) {
+                const totalPurchaseValue = purchasesData.reduce((sum, purchase) => sum + (Number(purchase.totalAmount) || 0), 0);
+                const totalPurchaseCount = purchasesData.length;
+                const avgPurchaseValue = totalPurchaseCount > 0 ? totalPurchaseValue / totalPurchaseCount : 0;
+                
+                const totalPurchaseDue = purchasesData.reduce((sum, purchase) => {
+                    if (returnedPurchaseIds && returnedPurchaseIds.has(purchase.firestoreId)) return sum;
+                    return sum + (Number(purchase.dueAmount) || 0);
+                }, 0);
+
+                document.getElementById('totalPurchaseValueStat').textContent = `${totalPurchaseValue.toFixed(2)} BDT`;
+                document.getElementById('totalPurchaseCount').textContent = totalPurchaseCount;
+                document.getElementById('avgPurchaseValue').textContent = `${avgPurchaseValue.toFixed(2)} BDT`;
+                document.getElementById('totalPurchaseDueStat').textContent = `${totalPurchaseDue.toFixed(2)} BDT`;
+            }
+
+            // --- Core Functions ---
+            function renderPurchases(purchasesToRender, returnedPurchaseIds) {
+                purchasesTableBody.innerHTML = '';
+                updateSummaryCards(purchasesToRender, returnedPurchaseIds);
+                if (purchasesToRender.length === 0) {
+                    purchasesTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-5">No purchase history found.</td></tr>';
+                    return;
+                }
+
+                const sortedPurchases = [...purchasesToRender].sort((a, b) => b.date.seconds - a.date.seconds);
+
+                sortedPurchases.forEach(purchase => {
+                    const itemsInPurchase = purchase.items || [];
+                    const totalQuantity = itemsInPurchase.reduce((sum, item) => sum + (item.quantity || 0), 0);
+                    const dueAmount = Number(purchase.dueAmount) || 0;
+                    const paidAmount = Number(purchase.paidAmount) || 0;
+                    const totalCost = Number(purchase.totalAmount) || 0;
+                    let statusBadge;
+                    const isReturned = returnedPurchaseIds.has(purchase.firestoreId);
+
+                    if (isReturned) {
+                        statusBadge = `<span class="badge bg-secondary">Returned</span>`;
+                    }
+                    else if (dueAmount <= 0) {
+                        statusBadge = `<span class="badge bg-success">Paid</span>`;
+                    } else if (paidAmount > 0) {
+                        statusBadge = `<span class="badge bg-warning text-dark">Partial</span>`;
+                    } else {
+                        statusBadge = `<span class="badge bg-danger">Due</span>`;
+                    }
+
+                    let actionsHtml = '';
+                    if (hasPermission(currentUser, 'purchase_history_details')) {
+                        actionsHtml += `<button class="btn btn-sm btn-success details-btn" data-purchase-id="${purchase.firestoreId}" title="View Details">Details</button>`;
+                    }
+                    if (dueAmount > 0 && hasPermission(currentUser, 'purchase_history_pay')) {
+                        actionsHtml += `
+                        <button class="btn btn-sm btn-info pay-due-btn" data-purchase-id="${purchase.firestoreId}" title="Pay Due">Pay</button> `;
+                    }
+                    if (hasPermission(currentUser, 'purchase_history_edit')) {
+                        actionsHtml += `
+                        <button class="btn btn-sm btn-warning edit-purchase-btn" data-purchase-id="${purchase.firestoreId}" title="Edit Purchase">Edit</button>
+                    `;
+                    }
+                    if (hasPermission(currentUser, 'purchase_history_delete')) {
+                        actionsHtml += `
+                        <button class="btn btn-sm btn-danger delete-purchase-btn" data-purchase-id="${purchase.firestoreId}" title="Delete Purchase">Delete</button>
+                    `;
+                    }
+
+                    const row = `
+                        <tr>
+                            <td>${purchase.firestoreId}</td>
+                            <td>${purchase.supplier || 'N/A'}</td>
+                            <td class="text-center">${totalQuantity}</td>
+                            <td class="text-end">${totalCost.toFixed(2)} ${dueAmount > 0 ? `<br><small class="text-danger">Due: ${dueAmount.toFixed(2)}</small>` : ''}</td>
+                            <td class="text-center">${new Date(purchase.date.seconds * 1000).toLocaleDateString()}</td>
+                            <td class="text-end">${actionsHtml}</td>
+                            <td class="text-center">${statusBadge}</td>
+                        </tr>
+                    `;
+                    purchasesTableBody.insertAdjacentHTML('beforeend', row);
+                });
+            }
+
+            function showPurchaseDetails(purchaseId) {
+                const purchase = allPurchases.find(p => p.firestoreId === purchaseId);
+                if (!purchase) return;
+
+                const itemsToRender = purchase.items || [];
+
+                const itemsHtml = itemsToRender.map(item => {
+                    const product = allProducts.find(p => p.firestoreId === item.productId);
+                    const productName = product ? product.name : 'Unknown Product';const lotHtml = item.lotNumber ? ` <span class="badge bg-secondary-subtle text-secondary-emphasis">${item.lotNumber}</span>` : '';
+                    return `<tr><td>${productName}${lotHtml}</td><td class="text-center">${item.quantity}</td><td class="text-end">${item.cost.toFixed(2)}</td><td class="text-end">${(item.quantity * item.cost).toFixed(2)}</td></tr>`;
+                }).join('');
+
+                const receiptHtml = `
+                    <div class="text-center mb-3"><h4>Baroda Computure And Seals</h4><p class="text-muted mb-0">Singra , Natore</p><h5 class="mt-2">Purchase Receipt</h5><hr></div>
+                    <div class="d-flex justify-content-between"><p class="text-muted mb-0">Purchase ID: ${purchase.firestoreId}</p><p class="text-muted mb-0">Supplier: <strong>${purchase.supplier || 'N/A'}</strong></p></div>
+                    <div class="d-flex justify-content-between">
+                        <p class="text-muted mb-0">Date: ${new Date(purchase.date.seconds * 1000).toLocaleString()}</p>
+                        <p class="text-muted mb-0">Purchased By: <strong class="text-body">${purchase.purchasedBy?.name || 'N/A'}</strong></p>
+                    </div>
+                    <table class="table table-sm"><thead><tr><th>Item</th><th class="text-center">Qty</th><th class="text-end">Cost/Unit</th><th class="text-end">Total</th></tr></thead><tbody>${itemsHtml}</tbody></table>
+                    <div class="d-flex justify-content-between"><span>Subtotal</span><span>${(purchase.subtotal || 0).toFixed(2)}</span></div>
+                    ${purchase.discount ? `<div class="d-flex justify-content-between text-danger"><span>Discount</span><span>-${purchase.discount.toFixed(2)}</span></div>` : ''}
+                    ${purchase.tax ? `<div class="d-flex justify-content-between"><span>Tax</span><span>+${purchase.tax.toFixed(2)}</span></div>` : ''}
+                    ${purchase.shipping ? `<div class="d-flex justify-content-between"><span>Shipping</span><span>+${purchase.shipping.toFixed(2)}</span></div>` : ''}
+                    ${purchase.carryCharge ? `<div class="d-flex justify-content-between"><span>Carry Charge</span><span>+${purchase.carryCharge.toFixed(2)}</span></div>` : ''}
+                    ${purchase.maintenance ? `<div class="d-flex justify-content-between"><span>Maintenance</span><span>+${purchase.maintenance.toFixed(2)}</span></div>` : ''}
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between fw-bold fs-5"><span>Grand Total</span><span>${(purchase.totalAmount || 0).toFixed(2)} BDT</span></div>
+                    <div class="d-flex justify-content-between"><span>Paid Amount</span><span>${(purchase.paidAmount || 0).toFixed(2)}</span></div>
+                    <div class="d-flex justify-content-between text-danger fw-bold"><span>Amount Due</span><span>${(purchase.dueAmount || 0).toFixed(2)}</span></div>
+                    <hr><div class="text-center mt-3"><p class="small text-muted">Shop Mobile: +880 1714-637798</p></div>`;
+
+                document.getElementById('purchaseReceiptContainer').innerHTML = receiptHtml;
+                new bootstrap.Modal(document.getElementById('purchaseDetailsModal')).show();
+            }
+
+            async function handlePayDue(purchaseId) {
+                const purchaseToModify = allPurchases.find(p => p.firestoreId === purchaseId);
+                if (!purchaseToModify || !(purchaseToModify.dueAmount > 0)) return;
+
+                document.getElementById('payDuePurchaseId').value = purchaseId;
+                document.getElementById('duePurchaseIdDisplay').textContent = purchaseId;
+                document.getElementById('dueTotalAmountDisplay').textContent = `${purchaseToModify.totalAmount.toFixed(2)} BDT`;
+                document.getElementById('dueCurrentDueDisplay').textContent = `${purchaseToModify.dueAmount.toFixed(2)} BDT`;
+
+                const paymentAmountInput = document.getElementById('paymentAmount');
+                paymentAmountInput.value = purchaseToModify.dueAmount.toFixed(2);
+                paymentAmountInput.max = purchaseToModify.dueAmount.toFixed(2);
+                paymentAmountInput.classList.remove('is-invalid');
+
+                new bootstrap.Modal(document.getElementById('payDueModal')).show();
+            }
+            // --- UI & Event Listener Setup ---
+            function setupUI(user) {
+                function hasPermissionForNav(p_user, mainPerm, relatedPerms = []) {
+                    if (hasPermission(p_user, mainPerm)) return true;
+                    return relatedPerms.some(p => hasPermission(p_user, p));
+                }
+
+                const navItems = {
+                    'dashboard': { el: document.querySelector('a[href="dashboard.html"]')?.closest('.nav-item'), perm: 'dashboard' },
+                    'products': { el: document.querySelector('a[href="#productSubmenu"]')?.closest('.nav-item'), perm: 'products', related: ['all_product', 'add_product'] },
+                    'purchase': { el: document.querySelector('a[href="#purchaseSubmenu"]')?.closest('.nav-item'), perm: 'purchase', related: ['purchase_return', 'purchase_return_history'] },
+                    'sales': { el: document.querySelector('a[href="#salesSubmenu"]')?.closest('.nav-item'), perm: 'sales', related: ['add_sale', 'add_sale_record', 'pos_sale_history', 'sell_return', 'sell_return_history'] },
+                    'people': { el: document.querySelector('a[href="#peopleSubmenu"]')?.closest('.nav-item'), perm: 'people', related: ['customer', 'supplier'] },
+                    'employee': { el: document.getElementById('employee-nav-item'), perm: 'manage_employees' },
+                    'account': { el: document.querySelector('a[href="account.html"]')?.closest('.nav-item'), perm: null }, // Always visible
+                    'pos': { el: document.querySelector('a[href="pos.html"]'), perm: 'pos' }
+                };
+ 
+                for (const key in navItems) {
+                    const item = navItems[key];
+                    if (item.el) {
+                        if (user.role === 'employee' && key === 'employee') {
+                            item.el.style.display = 'none';
+                        } else if ((user.role === 'admin' || hasPermission(user, 'manage_employees')) && key === 'employee') {
+                            item.el.style.display = 'flex';
+                        } else if (item.perm === null || hasPermissionForNav(user, item.perm, item.related || [])) {
+                            item.el.style.display = '';
+                        } else {
+                            item.el.style.display = 'none';
+                        }
+                    }
+                }
+
+                if (hasPermission(user, 'clear_history')) {
+                    document.getElementById('clearPurchaseHistoryBtn').style.display = 'block';
+                }
+
+                // Stat Cards Permissions
+                const statCards = [
+                    { id: 'perm-purchase_history_total_purchase_value', perm: 'purchase_history_total_purchase_value' },
+                    { id: 'perm-purchase_history_total_purchases', perm: 'purchase_history_total_purchases' },
+                    { id: 'perm-purchase_history_avg_purchase_value', perm: 'purchase_history_avg_purchase_value' },
+                    { id: 'perm-purchase_history_total_purchase_due', perm: 'purchase_history_total_purchase_due' }
+                ];
+                statCards.forEach(card => {
+                    const el = document.getElementById(card.id);
+                    if (el && !hasPermission(user, card.perm)) {
+                        el.style.display = 'none';
+                    }
+                });
+
+                const themeSwitcher = document.getElementById('theme-switcher');
+                const htmlEl = document.documentElement;
+                const applyTheme = (theme) => htmlEl.setAttribute('data-bs-theme', theme);
+                const updateSwitcherUI = (theme) => {
+                    const thumb = themeSwitcher.querySelector('.slider-thumb');
+                    const sunIcon = themeSwitcher.querySelector('.sun');
+                    const moonIcon = themeSwitcher.querySelector('.moon');
+                    thumb.style.transform = theme === 'dark' ? 'translateX(30px)' : 'translateX(0px)';
+                    if (sunIcon) sunIcon.style.display = theme === 'dark' ? 'block' : 'none';
+                    if (moonIcon) moonIcon.style.display = theme === 'dark' ? 'none' : 'block';
+                };
+                const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                applyTheme(savedTheme);
+                updateSwitcherUI(savedTheme);
+                themeSwitcher.addEventListener('click', () => {
+                    const newTheme = htmlEl.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                    applyTheme(newTheme);
+                    updateSwitcherUI(newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            }
+
+            async function setupEventListeners(user) {
+                const { doc, deleteDoc, writeBatch, collection, getDocs, increment, updateDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js");
+                document.getElementById('clearPurchaseHistoryBtn').addEventListener('click', async () => {
+                    if (confirm('Are you sure you want to permanently delete all purchase records? This action cannot be undone and does NOT revert stock levels.')) {
+                        try {
+                            const querySnapshot = await getDocs(collection(db, "purchases"));
+                            const batch = writeBatch(db);
+                            querySnapshot.docs.forEach(doc => batch.delete(doc.ref));
+                            await batch.commit();
+                            alert('All purchase records have been cleared.');
+                            loadAndRenderData();
+                        } catch (error) {
+                            console.error("Error clearing purchase history: ", error);
+                            alert("Failed to clear history. See console for details.");
+                        }
+                    }
+                });
+
+                document.getElementById('logoutButton').addEventListener('click', () => {
+                    sessionStorage.clear();
+                    window.location.href = 'signin.html';
+                });
+
+                purchasesTableBody.addEventListener('click', async (e) => {
+                    const target = e.target.closest('.details-btn, .edit-purchase-btn, .delete-purchase-btn, .pay-due-btn');
+                    if (!target) return;
+
+                    const purchaseId = target.dataset.purchaseId;
+                    const purchaseToModify = allPurchases.find(p => p.firestoreId === purchaseId);
+                    if (!purchaseToModify) return;
+
+                    if (target.classList.contains('details-btn') && hasPermission(currentUser, 'purchase_history_details')) {
+                        return showPurchaseDetails(purchaseId);
+                    }
+
+                    if (target.classList.contains('pay-due-btn') && hasPermission(currentUser, 'purchase_history_pay')) {
+                        handlePayDue(purchaseId);
+                    } else if (target.classList.contains('edit-purchase-btn') && hasPermission(currentUser, 'purchase_history_edit')) {
+                        if (confirm('Editing this purchase will load its items into the "Add Purchase" page for modification. The original record will be updated upon saving. Continue?')) {
+                            window.location.href = `purchase.html?edit=${purchaseId}`;
+                        }
+                    } else if (target.classList.contains('delete-purchase-btn') && hasPermission(currentUser, 'purchase_history_delete')) {
+                        if (confirm(`Are you sure you want to delete purchase record #? This will revert the stock levels and cannot be undone.`)) {
+                            try {
+                                const batch = writeBatch(db);
+                                purchaseToModify.items.forEach(item => {
+                                    const productRef = doc(db, "products", item.productId);
+                                    batch.update(productRef, { quantity: increment(-item.quantity) });
+                                });
+                                batch.delete(doc(db, "purchases", purchaseId));
+                                await batch.commit();
+
+                                alert('Purchase record and associated stock have been deleted.');
+                                loadAndRenderData();
+                            } catch (error) {
+                                console.error("Error deleting purchase:", error);
+                                alert("Failed to delete purchase. See console for details.");
+                            }
+                        }
+                    }
+                });
+
+                document.getElementById('payDueForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const purchaseId = document.getElementById('payDuePurchaseId').value;
+                    const paymentAmountInput = document.getElementById('paymentAmount');
+                    const paymentAmount = parseFloat(paymentAmountInput.value);
+                    const confirmBtn = document.getElementById('confirmPaymentBtn');
+
+                    const purchaseRef = doc(db, "purchases", purchaseId);
+                    const purchaseSnap = await getDoc(purchaseRef);
+                    const currentDue = purchaseSnap.data().dueAmount;
+
+                    if (!paymentAmount || paymentAmount <= 0 || paymentAmount > currentDue) {
+                        paymentAmountInput.classList.add('is-invalid');
+                        return;
+                    }
+
+                    confirmBtn.disabled = true;
+                    confirmBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...`;
+
+                    try {
+                        await updateDoc(purchaseRef, {
+                            paidAmount: increment(paymentAmount),
+                            dueAmount: increment(-paymentAmount)
+                        });
+                        alert('Payment successful!');
+                        bootstrap.Modal.getInstance(document.getElementById('payDueModal')).hide();
+                        loadAndRenderData(); // Refresh the table
+                    } catch (error) {
+                        console.error("Error processing payment: ", error);
+                        alert("Failed to process payment. See console for details.");
+                    } finally {
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = 'Confirm Payment';
+                    }
+                });
+
+                purchaseFilterForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await loadAndRenderData();
+                });
+
+                resetFilterBtn.addEventListener('click', () => {
+                    purchaseFilterForm.reset();
+                    loadAndRenderData();
+                });
+
+                document.getElementById('printPurchaseReceiptBtn').addEventListener('click', () => {
+                    const receiptContent = document.getElementById('purchaseReceiptContainer').innerHTML;
+                    if (!receiptContent.trim()) {
+                        alert('Receipt content is empty. Cannot print.');
+                        return;
+                    }
+                    const printWindow = window.open('', '_blank', 'height=600,width=800');
+                    printWindow.document.write(`<html><head><title>Print Purchase Receipt</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"><style>body { font-family: 'Inter', sans-serif; padding: 20px; }</style></head><body>${receiptContent}<script>window.onload = function() { window.print(); window.onafterprint = function() { window.close(); }; }<\/script></body></html>`);
+                    printWindow.document.close();
+                });
+            }
+
+            async function loadAndRenderData() {
+                const { collection, query, where, getDocs, orderBy, Timestamp } = await import("https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js");
+                const purchasesRef = collection(db, "purchases");
+
+                const startDate = startDateInput.value ? Timestamp.fromDate(new Date(startDateInput.value)) : null;
+                const endDate = endDateInput.value ? Timestamp.fromDate(new Date(endDateInput.value + 'T23:59:59')) : null;
+                const supplierTerm = supplierSearchInput.value.trim();
+
+                let q = query(purchasesRef, orderBy("date", "desc"));
+                if (startDate) q = query(q, where("date", ">=", startDate));
+                if (endDate) q = query(q, where("date", "<=", endDate));
+                if (supplierTerm) q = query(q, where("supplier", "==", supplierTerm));
+
+                const [purchaseSnapshot, purchaseReturnsSnapshot] = await Promise.all([
+                    getDocs(q),
+                    getDocs(collection(db, "purchaseReturns"))
+                ]);
+
+                allPurchases = purchaseSnapshot.docs.map(doc => ({ firestoreId: doc.id, ...doc.data() }));
+                const returnedPurchaseIds = new Set(purchaseReturnsSnapshot.docs.map(doc => doc.data().originalPurchaseId));
+
+                renderPurchases(allPurchases, returnedPurchaseIds);
+            }
+            async function init() {
+                const { getFirestore, collection, query, where, getDocs, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js");
+                const { app } = await import('./firebase-init.js');
+                db = getFirestore(app);
+
+                const sessionUserId = sessionStorage.getItem('loggedInUserId');
+                if (sessionUserId) {
+                    const userDocRef = doc(db, "users", sessionUserId);
+                    const userDocSnap = await getDoc(userDocRef);
+                    if (userDocSnap.exists()) {
+                        currentUser = { id: userDocSnap.id, ...userDocSnap.data() };
+                    }
+                }
+
+                if (!currentUser) {
+                    alert("Authentication error. Please sign in again.");
+                    window.location.href = 'signin.html';
+                    return;
+                }
+
+                if (!hasPermission(currentUser, 'purchase_history')) {
+                    alert('Access Denied. You do not have permission to view this page.');
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+                const productsSnapshot = await getDocs(collection(db, "products"));
+                allProducts = productsSnapshot.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
+
+                document.getElementById('welcomeMessage').textContent = `Welcome, ${currentUser.name.split(' ')[0]}`;
+                setupUI(currentUser);
+                await setupEventListeners(currentUser);
+                await loadAndRenderData();
+            }
+            init();
+        });
+
+    </script>
+    <script type="module" src="firebase-init.js"></script>
+</body>
+
+</html>
+    <script type="module" src="firebase-init.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    <link rel="icon" href="logo.png" type="image/x-icon">
+    <link rel="manifest" href="manifest.json?v=6">
+    <meta name="theme-color" content="#ffffff">
+    <script>
+        window.location.replace('/signin');
+    </script>
+</head>
+<body>
+    <p>If you are not redirected automatically, please <a href="signin">click here</a>.</p>
+    <p>if you hav any problem or any complain you can contact us at this gmail <code>sahaindranil1984@gmail.com</code></p>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('service-worker.js')
+            .then(reg => console.log('Service Worker registered!', reg))
+            .catch(err => console.log('Service Worker failed:', err));
+        });
+      }
+    </script>
+</body>
+</html>

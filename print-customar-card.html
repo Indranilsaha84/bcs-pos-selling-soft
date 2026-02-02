@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Customer Card</title>
+    <link rel="icon" href="logo.png" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bs-primary-rgb: 99, 102, 241;
+            --bs-primary: #6366f1;
+            --bs-body-font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--bs-body-font-family);
+            background-color: var(--bs-tertiary-bg);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100%;
+            padding-top: 56px;
+            background-color: var(--bs-body-bg);
+            border-right: 1px solid var(--bs-border-color);
+            z-index: 1020;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            color: var(--bs-body-color);
+            padding: .75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: var(--bs-tertiary-bg);
+        }
+
+        .sidebar .nav-link.active {
+            color: var(--bs-primary);
+            font-weight: 600;
+            border-left-color: var(--bs-primary);
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding-top: 72px;
+            flex-grow: 1;
+            padding-bottom: 40px;
+        }
+
+        /* Card Preview Styles */
+        .customer-card-preview {
+            width: 390px;
+            height: 245px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+            font-family: 'Inter', sans-serif;
+            border: 1px solid rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: row;
+            color: #333;
+        }
+
+        .customer-card-back {
+            width: 390px;
+            height: 245px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+            font-family: 'Inter', sans-serif;
+            border: 1px solid rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: row;
+            color: #333;
+        }
+
+        .card-sidebar {
+            width: 85px;
+            background: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            padding-bottom: 20px;
+            position: relative;
+            flex-shrink: 0;
+        }
+        
+        .card-sidebar::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(to top, rgba(0,0,0,0.2), transparent);
+        }
+        
+        .card-content {
+            flex: 1;
+            padding: 15px 15px 10px 15px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            min-width: 0;
+        }
+
+        .logo-container {
+            background: transparent;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            margin-bottom: 15px;
+            z-index: 2;
+        }
+
+        .logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: brightness(0) invert(1); /* Make logo white */
+        }
+
+        .sidebar-text {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: rotate(180deg);
+            color: rgba(255,255,255,0.15);
+            font-weight: 900;
+            font-size: 1.8rem;
+            letter-spacing: 4px;
+            text-align: center;
+            margin: auto 0;
+            cursor: default;
+            user-select: none;
+        }
+
+        .company-header {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: #6b7280;
+            letter-spacing: 1px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 5px;
+        }
+
+        .customer-name {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #111827;
+            margin-bottom: 10px;
+            line-height: 1.2;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .customer-id {
+            font-size: 0.65rem;
+            color: #4f46e5;
+            background: #eef2ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 2px;
+            font-weight: 600;
+            font-family: monospace;
+            border: none;
+        }
+
+        .info-row {
+            font-size: 0.7rem;
+            margin-bottom: 3px;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+        
+        .info-row i {
+            color: #6366f1;
+            margin-right: 8px;
+            font-size: 0.8rem;
+            width: 12px;
+            text-align: center;
+        }
+
+        .card-footer-link {
+            font-size: 0.6rem;
+            color: #9ca3af;
+            margin-top: auto;
+            text-align: center;
+        }
+
+        .btn-remove-card {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            background: rgba(220, 53, 69, 0.8);
+            border: none;
+            color: white;
+        }
+        .btn-remove-card:hover {
+            background: rgba(220, 53, 69, 1);
+        }
+
+        /* Theme Switcher */
+        .theme-switch-wrapper {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 1001;
+        }
+
+        #theme-switcher {
+            background: none;
+            border: 1px solid var(--bs-border-color-translucent);
+            padding: 0;
+            cursor: pointer;
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: var(--bs-tertiary-bg);
+            border-radius: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer {
+            background-color: var(--bs-body-bg);
+            padding: 1rem;
+            border-top: 1px solid var(--bs-border-color);
+            margin-left: 240px;
+        }
+
+        [data-bs-theme="dark"] .footer {
+            background: linear-gradient(270deg, #1e1b4b 0%, #3730a3 100%);
+        }
+
+        [data-bs-theme="light"] .footer {
+            background: linear-gradient(270deg, #e0e7ff 0%, #eef2ff 100%);
+        }
+
+        /* Print Styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #printableArea,
+            #printableArea * {
+                visibility: visible;
+            }
+
+            #printableArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0;
+                padding: 2mm;
+            }
+
+            .col-print-card {
+                margin-bottom: 5px;
+                break-inside: avoid;
+            }
+
+            .customer-card-preview {
+                box-shadow: none;
+                border: 1px solid #ccc;
+                color: #000;
+                background-color: #fff;
+                break-inside: avoid;
+            }
+            
+            .customer-card-back {
+                box-shadow: none;
+                border: 1px solid #ccc;
+                break-inside: avoid;
+            }
+
+            .card-sidebar {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .btn-remove-card {
+                display: none !important;
+            }
+            
+            .logo-container img {
+                filter: brightness(0) invert(1) !important;
+            }
+            
+            .customer-name, .customer-id {
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .sidebar,
+            .navbar,
+            .theme-switch-wrapper,
+            .footer {
+                display: none;
+            }
+
+            .main-content {
+                margin: 0;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.html" style="margin-left: 240px;">Baroda Computure And Sales</a>
+            <div>
+                <a href="pos.html" class="btn btn-warning me-2" title="Go to Point of Sale">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart-check-fill" viewBox="0 0 16 16">
+                        <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 4 0h3.5a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1.646-7.646-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708z"/>
+                    </svg>
+                    POS
+                </a>
+                <span id="welcomeMessage" class="navbar-text text-white me-3"></span>
+                <button id="logoutButton" class="btn btn-danger">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="sidebar">
+        <div class="p-3 text-center border-bottom">
+            <h5 class="mb-0">Navigation</h5>
+        </div>
+        <ul class="nav flex-column pt-2">
+            <li class="nav-item">
+                <a class="nav-link" href="dashboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                    </svg>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#productSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="productSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <path d="M16 13H8" />
+                        <path d="M16 17H8" />
+                        <path d="M10 9H8" />
+                    </svg>
+                    Products
+                </a>
+                <div class="collapse" id="productSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="web.html">All Product</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="add-product.html">Add product</a></li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item" id="print-label-nav-item">
+                <a class="nav-link active" href="#printLabelSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="true"
+                    aria-controls="printLabelSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                        <rect x="6" y="14" width="12" height="8"></rect>
+                    </svg>
+                    <span>Print Label</span>
+                </a>
+                <div class="collapse show" id="printLabelSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="barcode_generator.html">Barcode Generator</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link active" href="print-customar-card.html">Print Customer Card</a></li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#purchaseSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="false" aria-controls="purchaseSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 10V7a5 5 0 0 1 10 0v3" />
+                        <path
+                            d="M17 10h-1a4 4 0 0 0-8 0H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Z" />
+                    </svg>
+                    Purchase
+                </a>
+                <div class="collapse" id="purchaseSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="purchase.html">Add purchase</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="purchase-history.html">Purchase History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="purchase-return.html">Purchase Return</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="purchase-return-history.html">Purchase Return History</a></li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#salesSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="salesSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bag-check" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M10.854 8.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                    <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1m3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/>
+                    </svg>
+                    Sales
+                </a>
+                <div class="collapse" id="salesSubmenu">
+                    
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="all-sale-history.html">All Sales History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="add-sale-history.html">Add Sales History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="pos-sales-history.html">POS Sales History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="add-sale.html">Add sale</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="order-sale-history.html">Order Sale History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="sell-return.html">Sell Return</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="sell-return-history.html">Sell Return
+                         History</a>
+                        </li>
+                        
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#peopleSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="peopleSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    People
+                </a>
+                <div class="collapse" id="peopleSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="customer.html">Customer List</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="supplier.html">Supplier List</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="order.html">Order</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#reportsSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="reportsSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-bar-chart-2">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    Reports
+                </a>
+                <div class="collapse" id="reportsSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="profit-and-loss.html">Profit & Loss</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-report.html">Stock Report</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-adjust.html">Stock Adjust</a></li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item" id="leaderboard-nav-item">
+                <a class="nav-link" href="leaderboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-award"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                    Leaderboard
+                </a>
+            </li>
+            <li class="nav-item" id="employee-nav-item" style="display: none;">
+                <a class="nav-link" href="employee.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    Employee
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="account.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    Account
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="container-fluid px-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+                <h1 class="h2">Print Customer Card</h1>
+            </div>
+
+            <!-- Search Section -->
+            <div class="row mb-4">
+                <div class="col-md-8 offset-md-2">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                            </svg>
+                        </span>
+                        <input type="text" id="customerSearch" class="form-control" placeholder="Search by Name, Phone, Code, or Email...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Results -->
+            <div id="searchResults" class="row mb-5 justify-content-center">
+                <!-- Results injected here -->
+            </div>
+
+            <hr class="my-5">
+
+            <!-- Printable Area Header -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>Cards to Print</h3>
+                <button onclick="window.print()" class="btn btn-primary d-flex align-items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
+                        <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z" />
+                        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z" />
+                    </svg>
+                    Print All Cards
+                </button>
+            </div>
+
+            <!-- Printable Area -->
+            <div id="printableArea" class="row g-4">
+                <div class="col-12 text-center text-muted" id="emptyPrintMsg">
+                    No cards added yet. Search for a customer and click "Add Card".
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="text-center">
+            <span>Made with care in <strong>Bangladesh 🇧🇩 </strong>| <strong> Developed by</strong>: Indranil Saha | <strong> Version</strong>: 48.9.9 | <strong>Powered by</strong>: <a href="https://firebase.google.com/" target="_blank" class="text-decoration-none">Google Firebase.</a></span>
+        </div>
+    </footer>
+
+    <!-- Theme Switcher -->
+    <div class="theme-switch-wrapper">
+        <button id="theme-switcher" aria-label="Toggle theme">
+            <span class="slider-thumb bg-secondary">
+                <svg class="sun" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
+                </svg>
+                <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
+                </svg>
+            </span>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+        import { app } from './firebase-init.js';
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (sessionStorage.getItem('isAuthenticated') !== 'true') {
+                window.location.href = 'signin.html';
+            }
+
+            const db = getFirestore(app);
+            const searchInput = document.getElementById('customerSearch');
+            const searchResultsContainer = document.getElementById('searchResults');
+            const printableArea = document.getElementById('printableArea');
+            const emptyPrintMsg = document.getElementById('emptyPrintMsg');
+            const logoutButton = document.getElementById('logoutButton');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+
+            let allCustomers = [];
+            let currentUser = null;
+
+            // Load User
+            const sessionUserId = sessionStorage.getItem('loggedInUserId');
+            if (sessionUserId) {
+                const userDoc = await getDoc(doc(db, "users", sessionUserId));
+                if (userDoc.exists()) {
+                    currentUser = { id: userDoc.id, ...userDoc.data() };
+                    welcomeMessage.textContent = `Welcome, ${currentUser.name.split(' ')[0]}`;
+                    setupUI(currentUser);
+                }
+            }
+
+            function hasPermission(user, permission) {
+                if (!user) return false;
+                if (user.role === 'admin') return true;
+                return user.permissions && user.permissions.includes(permission);
+            }
+
+            function setupUI(user) {
+                function hasPermissionForNav(p_user, mainPerm, relatedPerms = []) {
+                    if (hasPermission(p_user, mainPerm)) return true;
+                    return relatedPerms.some(p => hasPermission(p_user, p));
+                }
+
+                const navItems = {
+                    'dashboard': { el: document.querySelector('a[href="dashboard.html"]')?.closest('.nav-item'), perm: 'dashboard' },
+                    'products': { el: document.querySelector('a[href="#productSubmenu"]')?.closest('.nav-item'), perm: 'products', related: ['all_product', 'add_product'] },
+                    'purchase': { el: document.querySelector('a[href="#purchaseSubmenu"]')?.closest('.nav-item'), perm: 'purchase', related: ['purchase_return', 'purchase_return_history'] },
+                    'sales': { el: document.querySelector('a[href="#salesSubmenu"]')?.closest('.nav-item'), perm: 'sales', related: ['add_sale', 'add_sale_record', 'pos_sale_history', 'sell_return', 'sell_return_history'] },
+                    'people': { el: document.querySelector('a[href="#peopleSubmenu"]')?.closest('.nav-item'), perm: 'people', related: ['customer', 'supplier'] },
+                    'leaderboard': { el: document.getElementById('leaderboard-nav-item'), perm: 'leaderboard' },
+                    'employee': { el: document.getElementById('employee-nav-item'), perm: 'manage_employees' },
+                    'account': { el: document.querySelector('a[href="account.html"]')?.closest('.nav-item'), perm: null },
+                    'pos': { el: document.querySelector('a[href="pos.html"]'), perm: 'pos' }
+                };
+
+                for (const key in navItems) {
+                    const item = navItems[key];
+                    if (item.el) {
+                        if (user.role === 'employee' && key === 'employee') {
+                            item.el.style.display = 'none';
+                        } else if (item.perm === null || hasPermissionForNav(user, item.perm, item.related || [])) {
+                            item.el.style.display = '';
+                        } else {
+                            item.el.style.display = 'none';
+                        }
+                    }
+                }
+            }
+
+            // Load Customers
+            async function loadCustomers() {
+                try {
+                    const querySnapshot = await getDocs(collection(db, "customers"));
+                    allCustomers = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                } catch (error) {
+                    console.error("Error loading customers:", error);
+                }
+            }
+
+            // Search Logic
+            function performSearch() {
+                const term = searchInput.value.toLowerCase().trim();
+                searchResultsContainer.innerHTML = '';
+
+                if (term.length === 0) return;
+
+                const filtered = allCustomers.filter(c => {
+                    const name = (c.name || '').toLowerCase();
+                    const phone = (c.phone || '').toString();
+                    const email = (c.email || '').toLowerCase();
+                    const code = (c.code || c.customerCode || '').toString().toLowerCase();
+                    return name.includes(term) || phone.includes(term) || email.includes(term) || code.includes(term);
+                });
+
+                if (filtered.length === 0) {
+                    searchResultsContainer.innerHTML = '<div class="col-12 text-center text-muted">No customers found.</div>';
+                    return;
+                }
+
+                filtered.forEach(customer => {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-6 col-lg-4 mb-3';
+                    col.innerHTML = `
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1 fw-bold">${customer.name}</h6>
+                                    <small class="text-muted d-block">${customer.phone || 'No Phone'}</small>
+                                    <small class="text-muted d-block">${customer.email || 'No Email'}</small>
+                                </div>
+                                <button class="btn btn-sm btn-success add-card-btn">Add Card</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    col.querySelector('.add-card-btn').addEventListener('click', () => addCardToPrint(customer));
+                    searchResultsContainer.appendChild(col);
+                });
+            }
+
+            // Add Card Logic
+            function addCardToPrint(customer) {
+                if (emptyPrintMsg) emptyPrintMsg.style.display = 'none';
+
+                const cardCol = document.createElement('div');
+                cardCol.className = 'col-print-card';
+                
+                // Format Date of Birth
+                let dob = customer.dob || customer.dateOfBirth || 'N/A';
+                const uniqueBarcodeId = `barcode-${customer.id}-${Date.now()}`;
+
+                // Calculate Valid Thru date (1 year from now)
+                const now = new Date();
+                const validThruDate = new Date(now.setFullYear(now.getFullYear() + 1));
+                const validThruString = `${(validThruDate.getMonth() + 1).toString().padStart(2, '0')}/${validThruDate.getFullYear().toString().slice(-2)}`;
+                
+                // Card HTML Structure
+                cardCol.innerHTML = `
+                    <div class="customer-card-preview">
+                        <div class="card-sidebar">
+                            <div class="logo-container">
+                                <img src="BC Logo2.png" alt="Logo"><div class="sidebar-text">MEMBER</div>
+                            </div>
+                            
+                        </div>
+                        <button class="btn btn-danger btn-sm btn-remove-card" onclick="this.closest('.col-print-card').remove()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l2.646 2.647a.5.5 0 0 1-.708-.708L8 7.293 5.354 4.646z"/></svg>
+                        </button>
+                        <div class="card-content">
+                            
+                            <div class="customer-id">ID: ${customer.displayId || customer.id || 'N/A'}</div>
+                            <div class="customer-name text-truncate" title="${customer.name || ''}">${customer.name || 'Customer Name'}</div>
+                            
+                            <div class="info-row"><i class="bi bi-telephone-fill"></i> <span>${customer.phone || 'N/A'}</span></div>
+                            <div class="info-row"><i class="bi bi-envelope-fill"></i> <span class="text-truncate" style="max-width: 180px;">${customer.email || 'N/A'}</span></div>
+                            <div class="info-row"><i class="bi bi-calendar-event-fill"></i> <span>${dob}</span></div>
+                            <div class="info-row"><i class="bi bi-calendar-check-fill"></i> <span>Valid Thru: ${validThruString}</span></div>
+                            
+                            <div class="mt-auto pt-2 text-center">
+                                <svg id="${uniqueBarcodeId}"></svg>
+                            </div>
+                            
+                            <div class="card-footer-link">
+                                barodasell.web.app
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                printableArea.appendChild(cardCol);
+
+                try {
+                    JsBarcode(`#${uniqueBarcodeId}`, customer.displayId || customer.id, {
+                        format: "CODE128",
+                        width: 1.5,
+                        height: 30,
+                        displayValue: false,
+                        margin: 0,
+                        background: "transparent"
+                    });
+                } catch (e) {
+                    console.error("Barcode generation failed", e);
+                }
+
+                // Back Card HTML Structure
+                const backCardCol = document.createElement('div');
+                backCardCol.className = 'col-print-card';
+                backCardCol.innerHTML = `
+                    <div class="customer-card-back">
+                        <div class="card-sidebar">
+                            <div class="logo-container">
+                                <img src="BC Logo2.png" alt="Logo"><div class="sidebar-text">MEMBER</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-danger btn-sm btn-remove-card" onclick="this.closest('.col-print-card').remove()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 0 .708.708L8 7.293 5.354 4.646z"/></svg>
+                        </button>
+                        <div class="card-content" style="align-items: center; justify-content: center; text-align: center;">
+                            <div class="qr-code-container" style="margin-bottom: 15px;">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://barodasell.web.app/customar-login.html" alt="QR Code" style="width: 90px; height: 90px;">
+                            </div>
+                            <p style="font-size: 0.9rem; font-weight: 700; margin-bottom: 5px; color: #1e1b4b;">Scan to Visit Website</p>
+                            <div class="contact-info" style="font-size: 0.75rem; color: #4b5563; font-weight: 500;">
+                                <p style="margin-bottom: 2px;"><strong>Baroda Computure And Sales</strong></p>
+                                <p style="margin-bottom: 2px;"><i class="bi bi-geo-alt-fill text-primary"></i> Singra, Natore</p>
+                                <p style="margin-bottom: 0;"><i class="bi bi-telephone-fill text-primary"></i> +880 1714-637798</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                printableArea.appendChild(backCardCol);
+            }
+
+            // Event Listeners
+            searchInput.addEventListener('input', performSearch);
+            
+            logoutButton.addEventListener('click', () => {
+                sessionStorage.clear();
+                window.location.href = 'signin.html';
+            });
+
+            // Theme Switcher Logic
+            const themeSwitcher = document.getElementById('theme-switcher');
+            const htmlEl = document.documentElement;
+            const applyTheme = (theme) => htmlEl.setAttribute('data-bs-theme', theme);
+            const updateSwitcherUI = (theme) => {
+                const thumb = themeSwitcher.querySelector('.slider-thumb');
+                const sunIcon = themeSwitcher.querySelector('.sun');
+                const moonIcon = themeSwitcher.querySelector('.moon');
+                thumb.style.transform = theme === 'dark' ? 'translateX(30px)' : 'translateX(0px)';
+                if (sunIcon) sunIcon.style.display = theme === 'dark' ? 'block' : 'none';
+                if (moonIcon) moonIcon.style.display = theme === 'dark' ? 'none' : 'block';
+            };
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            applyTheme(savedTheme);
+            updateSwitcherUI(savedTheme);
+            themeSwitcher.addEventListener('click', () => {
+                const newTheme = htmlEl.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                applyTheme(newTheme);
+                updateSwitcherUI(newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+
+            // Initialize
+            await loadCustomers();
+        });
+    </script>
+</body>
+</html>

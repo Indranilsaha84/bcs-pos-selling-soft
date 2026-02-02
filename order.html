@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Orders</title>
+    <link rel="icon" href="logo.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAPMvY4BHhhXDYQ9IJndZUlg4swWwLUuOo&libraries=places" async defer></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bs-primary-rgb: 99, 102, 241;
+            --bs-primary: #6366f1;
+            --bs-body-font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--bs-body-font-family);
+            background-color: var(--bs-tertiary-bg);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100%;
+            padding-top: 56px;
+            background-color: var(--bs-body-bg);
+            border-right: 1px solid var(--bs-border-color);
+            z-index: 1020;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            color: var(--bs-body-color);
+            padding: .75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: var(--bs-tertiary-bg);
+        }
+
+        .sidebar .nav-link.active {
+            color: var(--bs-primary);
+            font-weight: 600;
+            border-left-color: var(--bs-primary);
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding-top: 72px;
+            flex-grow: 1;
+            padding-bottom: 40px;
+        }
+
+        .theme-switch-wrapper {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 1001;
+        }
+
+        #theme-switcher {
+            background: none;
+            border: 1px solid var(--bs-border-color-translucent);
+            padding: 0;
+            cursor: pointer;
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: var(--bs-tertiary-bg);
+            border-radius: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer {
+            background-color: var(--bs-body-bg);
+            padding: 1rem;
+            border-top: 1px solid var(--bs-border-color);
+            margin-left: 240px;
+        }
+
+        [data-bs-theme="dark"] .footer {
+            background: linear-gradient(270deg, #1e1b4b 0%, #3730a3 100%);
+        }
+
+        [data-bs-theme="light"] .footer {
+            background: linear-gradient(270deg, #e0e7ff 0%, #eef2ff 100%);
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        if (sessionStorage.getItem('isAuthenticated') !== 'true') {
+            window.location.href = 'signin.html';
+        }
+    </script>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.html" style="margin-left: 240px;">Baroda Computure And Sales</a>
+            <div>
+                <a href="pos.html" class="btn btn-warning me-2" title="Go to Point of Sale">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-cart-check-fill" viewBox="0 0 16 16">
+                        <path
+                            d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 4 0h3.5a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1.646-7.646-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708z" />
+                    </svg>
+                    POS
+                </a>
+                <span id="welcomeMessage" class="navbar-text text-white me-3"></span>
+                <button id="logoutButton" class="btn btn-danger" title="Logout from the application">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="sidebar">
+        <div class="p-3 text-center border-bottom">
+            <h5 class="mb-0">Navigation</h5>
+        </div>
+        <ul class="nav flex-column pt-2">
+            <li class="nav-item">
+                <a class="nav-link" href="dashboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#productSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="productSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <path d="M16 13H8"></path>
+                        <path d="M16 17H8"></path>
+                        <path d="M10 9H8"></path>
+                    </svg>
+                    Products
+                </a>
+                <div class="collapse" id="productSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="web.html">All Product</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="add-product.html">Add product</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item" id="print-label-nav-item">
+                <a class="nav-link" href="#printLabelSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="printLabelSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                        <rect x="6" y="14" width="12" height="8"></rect>
+                    </svg>
+                    <span>Print Label</span>
+                </a>
+                <div class="collapse" id="printLabelSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="barcode_generator.html">Barcode Generator</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="print-customar-card.html">Print Customer Card</a></li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#purchaseSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="false" aria-controls="purchaseSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 10V7a5 5 0 0 1 10 0v3"></path>
+                        <path
+                            d="M17 10h-1a4 4 0 0 0-8 0H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Z">
+                        </path>
+                    </svg>
+                    Purchase
+                </a>
+                <div class="collapse" id="purchaseSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase.html">Add purchase</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-history.html">Purchase History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-return.html">Purchase Return</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="purchase-return-history.html">Purchase Return History</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#salesSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="salesSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bag-check" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M10.854 8.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                    <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1m3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/>
+                    </svg>
+                    Sales
+                </a>
+                <div class="collapse" id="salesSubmenu">
+                    
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="all-sale-history.html">All Sales History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="add-sale-history.html">Add Sales History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="pos-sales-history.html">POS Sales History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="add-sale.html">Add sale</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="order-sale-history.html">Order Sale History</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="sell-return.html">Sell Return</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="sell-return-history.html">Sell Return
+                         History</a>
+                        </li>
+                        
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="#peopleSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="true" aria-controls="peopleSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-users">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    People
+                </a>
+                <div class="collapse show" id="peopleSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="customer.html">Customer List</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link" href="supplier.html">Supplier List</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sub-link active" href="order.html">Order</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#reportsSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false"
+                    aria-controls="reportsSubmenu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="feather feather-bar-chart-2">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    Reports
+                </a>
+                <div class="collapse" id="reportsSubmenu">
+                    <ul class="nav flex-column ms-4">
+                        <li class="nav-item"><a class="nav-link sub-link" href="profit-and-loss.html">Profit &
+                                Loss</a></li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-report.html">Stock Report</a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link sub-link" href="stock-adjust.html">Stock Adjust</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item" id="leaderboard-nav-item">
+                <a class="nav-link" href="leaderboard.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-award"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                    Leaderboard
+                </a>
+            </li>
+            <li class="nav-item" id="employee-nav-item" style="display: none;">
+                <a class="nav-link" href="employee.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Employee
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="account.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Account
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="container-fluid px-4">
+            <div
+                class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Customer Orders</h1>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Incoming Orders</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Date</th>
+                                    <th>Customer</th>
+                                    <th>Total Amount</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                <!-- Orders will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="text-center">
+            <span>Made with care in <strong>Bangladesh 🇧🇩 </strong>| <strong> Developed by</strong>: Indranil Saha | <strong> Version</strong>: 48.9.9 | <strong>Powered by</strong>: <a href="https://firebase.google.com/" target="_blank" class="text-decoration-none">Google Firebase.</a></span>
+        </div>
+    </footer>
+
+    <!-- Order Details Modal -->
+    <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="orderDetailsModalLabel">Order Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="orderDetailsContainer">
+                    <!-- Details injected here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Switcher -->
+    <div class="theme-switch-wrapper">
+        <button id="theme-switcher" aria-label="Toggle theme">
+            <span class="slider-thumb bg-secondary">
+                <svg class="sun" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                    fill="currentColor" viewBox="0 0 16 16">
+                    <path
+                        d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
+                </svg>
+                <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    viewBox="0 0 16 16">
+                    <path
+                        d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
+                </svg>
+            </span>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, query, where, orderBy, writeBatch, increment } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+        import { app } from './firebase-init.js';
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            const db = getFirestore(app);
+            const ordersTableBody = document.getElementById('ordersTableBody');
+            const orderDetailsModal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
+            const orderDetailsContainer = document.getElementById('orderDetailsContainer');
+            const logoutButton = document.getElementById('logoutButton');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            let currentUser = null;
+            let allOrders = [];
+
+            // --- Auth & Permissions ---
+            const sessionUserId = sessionStorage.getItem('loggedInUserId');
+            if (sessionUserId) {
+                const userDocRef = doc(db, "users", sessionUserId);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                    currentUser = { id: userDocSnap.id, ...userDocSnap.data() };
+                    welcomeMessage.textContent = `Welcome, ${currentUser.name.split(' ')[0]}`;
+                    
+                    if (!hasPermission('order') && !hasPermission('people')) {
+                        alert('Access Denied. You do not have permission to view this page.');
+                        window.location.href = 'dashboard.html';
+                        return;
+                    }
+                } else {
+                    sessionStorage.clear();
+                    window.location.href = 'signin.html';
+                }
+            } else {
+                window.location.href = 'signin.html';
+            }
+
+            function hasPermission(permission) {
+                if (!currentUser) return false;
+                if (currentUser.role === 'admin') return true;
+                return Array.isArray(currentUser.permissions) && currentUser.permissions.includes(permission);
+            }
+
+            // --- UI Setup ---
+            function setupUI() {
+                // Basic sidebar logic (simplified for this file)
+                if (hasPermission('manage_employees')) {
+                    document.getElementById('employee-nav-item').style.display = 'flex';
+                }
+                
+                // Theme Switcher
+                const themeSwitcher = document.getElementById('theme-switcher');
+                const htmlEl = document.documentElement;
+                const applyTheme = (theme) => htmlEl.setAttribute('data-bs-theme', theme);
+                const updateSwitcherUI = (theme) => {
+                    const thumb = themeSwitcher.querySelector('.slider-thumb');
+                    const sunIcon = themeSwitcher.querySelector('.sun');
+                    const moonIcon = themeSwitcher.querySelector('.moon');
+                    thumb.style.transform = theme === 'dark' ? 'translateX(30px)' : 'translateX(0px)';
+                    if (sunIcon) sunIcon.style.display = theme === 'dark' ? 'block' : 'none';
+                    if (moonIcon) moonIcon.style.display = theme === 'dark' ? 'none' : 'block';
+                };
+                const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                applyTheme(savedTheme);
+                updateSwitcherUI(savedTheme);
+                themeSwitcher.addEventListener('click', () => {
+                    const newTheme = htmlEl.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                    applyTheme(newTheme);
+                    updateSwitcherUI(newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            }
+
+            // --- Data Loading ---
+            async function loadOrders() {
+                try {
+                    // Fetch sales that are likely customer orders (no source or source is not 'pos'/'add_sale')
+                    // Or simply filter by paymentStatus == 'Pending' as a proxy for new orders
+                    const q = query(collection(db, "sales"), orderBy("date", "desc"));
+                    const querySnapshot = await getDocs(q);
+                    
+                    allOrders = querySnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    })).filter(sale => {
+                        // Filter logic: Show orders that are pending payment OR don't have a specific source (implies customer portal)
+                        return sale.paymentStatus === 'Pending' || !sale.source;
+                    });
+
+                    renderOrders();
+                } catch (error) {
+                    console.error("Error loading orders:", error);
+                    ordersTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading orders.</td></tr>';
+                }
+            }
+
+            function renderOrders() {
+                ordersTableBody.innerHTML = '';
+                if (allOrders.length === 0) {
+                    ordersTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No pending orders found.</td></tr>';
+                    return;
+                }
+
+                allOrders.forEach(order => {
+                    const date = order.date ? new Date(order.date.seconds * 1000).toLocaleString() : 'N/A';
+                    const customerName = order.customer ? order.customer.name : 'Unknown';
+                    const statusBadge = `<span class="badge bg-warning text-dark">${order.paymentStatus || 'Pending'}</span>`;
+                    
+                    let actionsHtml = '';
+                    if (hasPermission('order_details')) {
+                        actionsHtml = `<button class="btn btn-sm btn-primary view-details-btn" data-id="${order.id}">View Details</button>`;
+                    }
+                    
+                    const row = `
+                        <tr>
+                            <td>${order.id}</td>
+                            <td>${date}</td>
+                            <td>${customerName}</td>
+                            <td>${(order.totalAmount || 0).toFixed(2)} BDT</td>
+                            <td>${statusBadge}</td>
+                            <td class="text-end">${actionsHtml}</td>
+                        </tr>
+                    `;
+                    ordersTableBody.insertAdjacentHTML('beforeend', row);
+                });
+            }
+
+            // --- Event Listeners ---
+            ordersTableBody.addEventListener('click', (e) => {
+                if (e.target.classList.contains('view-details-btn')) {
+                    const orderId = e.target.dataset.id;
+                    const order = allOrders.find(o => o.id === orderId);
+                    if (order) showOrderDetails(order);
+                }
+            });
+
+            function showOrderDetails(order) {
+                const itemsHtml = (order.items || []).map(item => `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td class="text-center">${item.quantity}</td>
+                        <td class="text-end">${(item.price || 0).toFixed(2)}</td>
+                        <td class="text-end">${((item.price || 0) * item.quantity).toFixed(2)}</td>
+                    </tr>
+                `).join('');
+
+                let detailsHtml = `
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Order ID:</strong> ${order.id}</p>
+                            <p><strong>Date:</strong> ${new Date(order.date.seconds * 1000).toLocaleString()}</p>
+                            <p><strong>Status:</strong> ${order.paymentStatus || 'Pending'}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Customer:</strong> ${order.customer?.name || 'N/A'}</p>
+                            <p><strong>Phone:</strong> ${order.customer?.phone || 'N/A'}</p>
+                            <p><strong>Email:</strong> ${order.customer?.email || 'N/A'}</p>
+                        </div>
+                    </div>
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-end">Price</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>${itemsHtml}</tbody>
+                    </table>
+                    <div class="d-flex justify-content-end">
+                        <div style="width: 250px;">
+                            <div class="d-flex justify-content-between"><span>Subtotal:</span> <span>${(order.subtotal || 0).toFixed(2)}</span></div>
+                            <div class="d-flex justify-content-between fw-bold border-top mt-1 pt-1"><span>Total:</span> <span>${(order.totalAmount || 0).toFixed(2)} BDT</span></div>
+                        </div>
+                    </div>
+                    ${order.location ? `
+                        <hr>
+                        <h5>Delivery Location</h5>
+                        <p><strong>Address:</strong> ${order.location.address}</p>
+                        <div id="orderMap" style="height: 250px; width: 100%; border-radius: .5rem;"></div>
+                        <a href="https://www.google.com/maps?q=${order.location.lat},${order.location.lng}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">View on Google Maps</a>
+                        <div class="alert alert-info mt-3 mb-0" role="alert">
+                            The delivery charge will be added as the distance from the Store of Baroda Computure and Sales.
+                        </div>
+                    ` : ''}
+                `;
+                if (hasPermission('order_update_status')) {
+                    detailsHtml += `
+                    <hr class="my-4">
+                    <div class="row align-items-end">
+                        <div class="col-md-6">
+                            <label for="updateStatusSelect" class="form-label fw-bold">Update Order Status</label>
+                            <div class="input-group">
+                                <select class="form-select" id="updateStatusSelect">
+                                    <option value="Pending" ${order.paymentStatus === 'Pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="Processing" ${order.paymentStatus === 'Processing' ? 'selected' : ''}>Processing</option>
+                                    <option value="Shipped" ${order.paymentStatus === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                                    <option value="Delivered" ${order.paymentStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                    <option value="Cancelled" ${order.paymentStatus === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                                    <option value="Paid" ${order.paymentStatus === 'Paid' ? 'selected' : ''}>Paid</option>
+                                </select>
+                                <button class="btn btn-primary" id="saveStatusBtn" data-order-id="${order.id}">Update</button>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }
+                
+                orderDetailsContainer.innerHTML = detailsHtml;
+
+                // Initialize map if location exists
+                if (order.location && order.location.lat && order.location.lng) {
+                    const location = { lat: order.location.lat, lng: order.location.lng };
+                    const map = new google.maps.Map(document.getElementById("orderMap"), {
+                        zoom: 15,
+                        center: location,
+                    });
+                    new google.maps.Marker({
+                        position: location,
+                        map: map,
+                    });
+                }
+                // Add event listener for status update
+                const saveStatusBtn = document.getElementById('saveStatusBtn');
+                if (saveStatusBtn) {
+                    saveStatusBtn.addEventListener('click', async (e) => {
+                        const btn = e.target;
+                        const newStatus = document.getElementById('updateStatusSelect').value;
+                        const orderId = btn.dataset.orderId;
+
+                        btn.disabled = true;
+                        btn.textContent = 'Updating...';
+
+                        try {
+                            const batch = writeBatch(db);
+                            const saleRef = doc(db, "sales", orderId);
+
+                            const updateData = { paymentStatus: newStatus };
+
+                            if (newStatus === 'Paid') {
+                                updateData.paidAmount = order.totalAmount;
+                                updateData.dueAmount = 0;
+                            } else if (newStatus === 'Cancelled') {
+                                updateData.dueAmount = 0;
+                            } else if (order.paymentStatus === 'Paid' || order.paymentStatus === 'Cancelled') {
+                                // Reverting from Paid/Cancelled to an active unpaid status
+                                updateData.paidAmount = 0;
+                                updateData.dueAmount = order.totalAmount;
+                            }
+
+                            batch.update(saleRef, updateData);
+
+                            // Stock adjustment logic
+                            const reducingStatuses = ['Paid', 'Delivered', 'Shipped'];
+                            const currentStatus = order.paymentStatus || 'Pending';
+                            const isNewReducing = reducingStatuses.includes(newStatus);
+                            const isOldReducing = reducingStatuses.includes(currentStatus);
+
+                            if (isNewReducing && !isOldReducing) {
+                                // Deduct stock
+                                (order.items || []).forEach(item => {
+                                    const productId = item.firestoreId || item.productId || item.id;
+                                    if (productId) {
+                                        const productRef = doc(db, "products", productId);
+                                        batch.update(productRef, { quantity: increment(-item.quantity) });
+                                    }
+                                });
+                            } else if (!isNewReducing && isOldReducing) {
+                                // Restore stock (e.g. Paid -> Cancelled)
+                                (order.items || []).forEach(item => {
+                                    const productId = item.firestoreId || item.productId || item.id;
+                                    if (productId) {
+                                        const productRef = doc(db, "products", productId);
+                                        batch.update(productRef, { quantity: increment(item.quantity) });
+                                    }
+                                });
+                            }
+
+                            await batch.commit();
+                            alert('Order status updated successfully!');
+                            orderDetailsModal.hide();
+                            loadOrders();
+                        } catch (error) {
+                            console.error("Error updating status:", error);
+                            alert('Failed to update status.');
+                            btn.disabled = false;
+                            btn.textContent = 'Update';
+                        }
+                    });
+                }
+                orderDetailsModal.show();
+            }
+            logoutButton.addEventListener('click', () => {
+                sessionStorage.clear();
+                window.location.href = 'signin.html';
+            });
+            setupUI(currentUser);
+            loadOrders();
+        });
+    </script>
+</body>
+
+</html>
